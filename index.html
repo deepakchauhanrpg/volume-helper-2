@@ -171,7 +171,7 @@ function downloadPDF() {
             const centerY = pageHeight / 2;
 
             // Gap 40 units ka rakha hai taaki merge na ho
-            doc.text(line1, startX, centerY - 40, { angle: 45 });
+            doc.text(line1, startX, centerY - 20, { angle: 45 });
             doc.text(line2, startX + 25, centerY, { angle: 45 });
             doc.text(line3, startX + 10, centerY + 40, { angle: 45 });
             
@@ -179,7 +179,7 @@ function downloadPDF() {
         }
     });
 
-    doc.save("deepak_anjali_report.pdf"); 
+    doc.save("deepak_anjali.pdf"); 
 }
 
     
