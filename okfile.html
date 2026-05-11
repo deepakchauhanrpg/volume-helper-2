@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volume Helper - Official Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        #mainContent { display: none; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 15px; background: #fdfdfd; color: #333; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); max-width: 500px; margin: auto; border: 1px solid #f0f0f0; }
+        h2 { color: #2c3e50; text-align: center; margin-top: 0; font-weight: 700; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 5px; color: #666; }
+        input { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #1a73e8, #1557b0); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-download { background: linear-gradient(135deg, #34a853, #2d8e47); margin-top: 15px; display: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 10px; overflow: hidden; max-width: 500px; margin: 20px auto; }
+        th, td { border: 1px solid #f0f0f0; padding: 12px; text-align: center; font-size: 13px; }
+        th { background: #f8f9fa; color: #2c3e50; }
+        .footer { text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+        .summary { background: #f0f7ff; padding: 12px; border-radius: 10px; margin-top: 20px; font-weight: bold; text-align: center; color: #1a73e8; border: 1px dashed #1a73e8; }
+    </style>
+</head>
+<body>
+
+<script>
+    // --- PASSWORD SETTING ---
+    var passKey = "Anjali123"; 
+    var userPass = prompt("Please enter the password to access this tool:");
+
+    if (userPass === passKey) {
+        document.write("<style>#mainContent { display: block !important; }</style>");
+    } else {
+        alert("Wrong Password! Page will not load.");
+        window.location.reload(); 
+    }
+</script>
+
+<div id="mainContent">
+    <div class="card">
+        <h2>Volume Helper Pro</h2>
+        
+        <div class="input-group">
+            <label>Length (A) [Values comma se alag]:</label>
+            <input type="text" id="lenValues" value="0.95, 1.25, 1.55, 1.85, 2.15">
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <div class="input-group" style="flex: 1;">
+                <label>Min Girth (B):</label>
+                <input type="number" id="minB" value="0.31" step="0.01">
+            </div>
+            <div class="input-group" style="flex: 1;">
+                <label>Max Girth (B):</label>
+                <input type="number" id="maxB" value="2.00" step="0.01">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <div class="input-group" style="flex: 1;">
+                <label>Target Vol (C):</label>
+                <input type="number" id="target" value="500">
+            </div>
+            <div class="input-group" style="flex: 1;">
+                <label>Total Rows:</label>
+                <input type="number" id="rows" value="1000">
+            </div>
+        </div>
+
+        <button onclick="calculate()">Generate List</button>
+        <button id="downloadBtn" class="btn-download" onclick="downloadPDF()">Download PDF List</button>
+        
+        <div id="summary" class="summary" style="display:none;"></div>
+        
+        <div class="footer">
+            <p style="margin: 0; font-size: 13px; color: #888;">Designed by <b>Deepak Chauhan</b></p>
+            <p style="margin: 5px 0 0 0; font-size: 15px; color: #e91e63;">Specially for <b>Anjali Gangwar 💓</b></p>
+        </div>
+    </div>
+
+    <table id="resTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Length (A)</th>
+                <th>Girth (B)</th>
+                <th>Volume (C)</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+// --- STRICT DECIMAL TRUNCATION (NO ROUNDING) ---
+function truncateDecimal(num, fixed) {
+    var re = new RegExp('^-?\\d+(?:\\.\\d{0,' + (fixed || -1) + '})?');
+    var result = num.toString().match(re);
+    return result ? result[0] : num.toFixed(fixed);
+}
+
+let tableDataForPDF = [];
+
+function calculate() {
+    const target = parseFloat(document.getElementById('target').value);
+    const totalRows = parseInt(document.getElementById('rows').value);
+    const minG = parseFloat(document.getElementById('minB').value);
+    const maxG = parseFloat(document.getElementById('maxB').value);
+    const aVals = document.getElementById('lenValues').value.split(',').map(v => parseFloat(v.trim()));
+    const avgA = aVals.reduce((a, b) => a + b, 0) / aVals.length;
+    
+    const idealB = Math.sqrt((target * 16) / (totalRows * avgA));
+    
+    let currentVolSum = 0;
+    let rowsHtml = "";
+    tableDataForPDF = [];
+
+    for (let i = 0; i < totalRows - 1; i++) {
+        let a = aVals[Math.floor(Math.random() * aVals.length)];
+        let b = (idealB + (Math.random() * 0.2 - 0.1));
+        if (b < minG) b = minG;
+        if (b > maxG) b = maxG;
+        let finalB = parseFloat(b.toFixed(2));
+        
+        let rawC = (a * Math.pow(finalB, 2)) / 16;
+        let displayC = truncateDecimal(rawC, 4);
+        
+        currentVolSum += parseFloat(displayC);
+        rowsHtml += `<tr><td>${i+1}</td><td>${a}</td><td>${finalB.toFixed(2)}</td><td>${displayC}</td></tr>`;
+        tableDataForPDF.push([i+1, a, finalB.toFixed(2), displayC]);
+    }
+
+    let lastA = aVals[Math.floor(Math.random() * aVals.length)];
+    let neededC = target - currentVolSum;
+    if (neededC < 0) neededC = 0.01;
+    let lastB = Math.sqrt((neededC * 16) / lastA);
+    let finalRowC = truncateDecimal(neededC, 4);
+
+    rowsHtml += `<tr style="background:#fff0f3; font-weight:bold;"><td>${totalRows}</td><td>${lastA}</td><td>${lastB.toFixed(2)}</td><td>${finalRowC}</td></tr>`;
+    tableDataForPDF.push([totalRows, lastA, lastB.toFixed(2), finalRowC]);
+    
+    document.querySelector("#resTable tbody").innerHTML = rowsHtml;
+    document.getElementById('summary').style.display = "block";
+    document.getElementById('summary').innerText = `Total Volume: ${target.toFixed(4)}`;
+    document.getElementById('downloadBtn').style.display = "block";
+}
+
+// --- PDF DOWNLOAD WITH DIAGONAL WATERMARK ---
+function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    const line1 = "Designed by Deepak Chauhan";
+    const line2 = "Specially for Anjali Gangwar 💓";
+    
+    doc.autoTable({
+        head: [['#', 'Length (A)', 'Girth (B)', 'Volume (C)']],
+        body: tableDataForPDF,
+        startY: 20,
+        margin: { top: 25 },
+        didDrawPage: function (data) {
+            // GOVT STYLE DIAGONAL WATERMARK
+            doc.saveGraphicsState();
+            doc.setGState(new doc.GState({opacity: 0.3})); // Opacity 0.3 (Visible but faded)
+            doc.setFontSize(24); // Size 24 taaki lamba naam na kate
+            doc.setTextColor(140); // Dark Grey color
+            doc.setFont("helvetica", "bold");
+            
+            // Positioning for full name visibility
+            doc.text(line1, 30, 140, { angle: 45 });
+            doc.text(line2, 30, 155, { angle: 45 });
+            
+            doc.restoreGraphicsState();
+        }
+    });
+
+    doc.save("Volume_List_Deepak_Anjali.pdf");
+}
+</script>
+</body>
+</html>
