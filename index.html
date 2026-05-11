@@ -156,7 +156,7 @@ function downloadPDF() {
         body: tableDataForPDF,
         startY: 20,
         margin: { top: 25 },
-        didDrawPage: function (data) {
+                didDrawPage: function (data) {
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
             const centerX = pageWidth / 2;
@@ -164,20 +164,23 @@ function downloadPDF() {
 
             doc.saveGraphicsState();
             doc.setGState(new doc.GState({opacity: 0.15})); 
-            doc.setTextColor(128, 0, 0); // Maroon
+            doc.setTextColor(128, 0, 0); 
             doc.setFont("times", "italic"); 
-            doc.setFontSize(45); // Size ko thoda balance kiya hai taaki lamba naam na kate
+            doc.setFontSize(42); 
 
-            // PERFECT BALANCED GAP (Sabke beech 35-35 ka gap)
-            // Uper wali line: -35
-            // Beech wali line: 0
-            // Niche wali line: +35
-            doc.text(line1, centerX, centerY - 35, { angle: 45, align: "center" });
-            doc.text(line2, centerX, centerY, { angle: 45, align: "center" });
-            doc.text(line3, centerX, centerY + 35, { angle: 45, align: "center" });
+            // Diagonal flow ko barabar karne ke liye X aur Y dono ko thoda adjust kiya hai
+            // Line 1 (By Deepak Chauhan): Ise thoda niche aur right laya hoon
+            doc.text("By Deepak Chauhan", centerX + 10, centerY - 30, { angle: 45, align: "center" });
+            
+            // Line 2 (to my sukoon): Ye bilkul center point rahega
+            doc.text("to my sukoon", centerX, centerY, { angle: 45, align: "center" });
+            
+            // Line 3 (Anjali Gangwar): Ise thoda upar aur left sarakaya hai taaki flow barabar rahe
+            doc.text("Anjali Gangwar", centerX - 10, centerY + 30, { angle: 45, align: "center" });
             
             doc.restoreGraphicsState();
         }
+
     });
 
     doc.save("deepak_anjali.pdf"); 
