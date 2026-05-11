@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+t<!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
@@ -148,8 +148,8 @@ function downloadPDF() {
     const doc = new jsPDF();
     
     const line1 = "Designed by Deepak Chauhan";
-    const line2 = "with love ";
-    const line3 = "Specially for Anjali Gangwar ";  // Unicode heart use kiya hai
+    const line2 = "with love";
+    const line3 = "Specially for Anjali Gangwar"; 
     
     doc.autoTable({
         head: [['#', 'Length (A)', 'Girth (B)', 'Volume (C)']],
@@ -159,23 +159,32 @@ function downloadPDF() {
         didDrawPage: function (data) {
             doc.saveGraphicsState();
             
-            // --- MAROON COLOUR & ITALIC FONT ---
+            // Opacity thodi kam (0.2) taaki bade letters table na chupayein
             doc.setGState(new doc.GState({opacity: 0.3})); 
-            doc.setTextColor(128, 0, 0); // Maroon Colour Code
-            doc.setFont("times", "italic"); // Italic Style
-            doc.setFontSize(55); 
             
-            // Diagonal Positioning
-            doc.text(line1, 35, 145, { angle: 45 });
-            doc.text(line2, 50, 160, { angle: 45 });
-            doc.text(line3, 35, 175, { angle: 45 });
+            // MAROON COLOUR & ITALIC FONT
+            doc.setTextColor(128, 0, 0); 
+            doc.setFont("times", "italic"); 
+            doc.setFontSize(50); // Ekdam mast bada size
+            
+            // --- AUTO CENTER LOGIC ---
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const startX = pageWidth / 4; // Center se thoda pehle shuru
+            const centerY = pageHeight / 2;
+
+            // Positioning (X, Y) diagonal alignment ke saath
+            doc.text(line1, startX, centerY - 30, { angle: 45 });
+            doc.text(line2, startX + 15, centerY, { angle: 45 });
+            doc.text(line3, startX + 5, centerY + 30, { angle: 45 });
             
             doc.restoreGraphicsState();
         }
     });
 
-    doc.save("deepak_anjali.pdf");
+    doc.save("deepak_anjali.pdf"); 
 }
+    
 </script>
 </body>
 </html>
