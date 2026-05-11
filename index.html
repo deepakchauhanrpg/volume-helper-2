@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Volume Helper - Official Edition</title>
+    <title>Volume Helper - Maroon Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
@@ -11,30 +11,28 @@
         #mainContent { display: none; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 15px; background: #fdfdfd; color: #333; }
         .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); max-width: 500px; margin: auto; border: 1px solid #f0f0f0; }
-        h2 { color: #2c3e50; text-align: center; margin-top: 0; font-weight: 700; }
+        h2 { color: #800000; text-align: center; margin-top: 0; font-weight: 700; }
         .input-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 5px; color: #666; }
         input { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 10px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #1a73e8, #1557b0); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #800000, #4d0000); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-download { background: linear-gradient(135deg, #34a853, #2d8e47); margin-top: 15px; display: none; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 10px; overflow: hidden; max-width: 500px; margin: 20px auto; }
         th, td { border: 1px solid #f0f0f0; padding: 12px; text-align: center; font-size: 13px; }
-        th { background: #f8f9fa; color: #2c3e50; }
+        th { background: #f8f9fa; color: #800000; }
         .footer { text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
-        .summary { background: #f0f7ff; padding: 12px; border-radius: 10px; margin-top: 20px; font-weight: bold; text-align: center; color: #1a73e8; border: 1px dashed #1a73e8; }
+        .summary { background: #fff5f5; padding: 12px; border-radius: 10px; margin-top: 20px; font-weight: bold; text-align: center; color: #800000; border: 1px dashed #800000; }
     </style>
 </head>
 <body>
 
 <script>
-    // --- PASSWORD SETTING ---
-    var passKey = "Anjali143"; 
+    var passKey = "Anjali123"; 
     var userPass = prompt("Please enter the password to access this tool:");
-
     if (userPass === passKey) {
         document.write("<style>#mainContent { display: block !important; }</style>");
     } else {
-        alert("Wrong Password! Page will not load.");
+        alert("Wrong Password!");
         window.location.reload(); 
     }
 </script>
@@ -77,7 +75,7 @@
         
         <div class="footer">
             <p style="margin: 0; font-size: 13px; color: #888;">Designed by <b>Deepak Chauhan</b></p>
-            <p style="margin: 5px 0 0 0; font-size: 15px; color: #e91e63;">Specially for <b>Anjali Gangwar 💓</b></p>
+            <p style="margin: 5px 0 0 0; font-size: 15px; color: #800000;">Specially for <b>Anjali Gangwar ❤</b></p>
         </div>
     </div>
 
@@ -95,7 +93,6 @@
 </div>
 
 <script>
-// --- STRICT DECIMAL TRUNCATION (NO ROUNDING) ---
 function truncateDecimal(num, fixed) {
     var re = new RegExp('^-?\\d+(?:\\.\\d{0,' + (fixed || -1) + '})?');
     var result = num.toString().match(re);
@@ -111,7 +108,6 @@ function calculate() {
     const maxG = parseFloat(document.getElementById('maxB').value);
     const aVals = document.getElementById('lenValues').value.split(',').map(v => parseFloat(v.trim()));
     const avgA = aVals.reduce((a, b) => a + b, 0) / aVals.length;
-    
     const idealB = Math.sqrt((target * 16) / (totalRows * avgA));
     
     let currentVolSum = 0;
@@ -124,11 +120,10 @@ function calculate() {
         if (b < minG) b = minG;
         if (b > maxG) b = maxG;
         let finalB = parseFloat(b.toFixed(2));
-        
         let rawC = (a * Math.pow(finalB, 2)) / 16;
         let displayC = truncateDecimal(rawC, 4);
-        
         currentVolSum += parseFloat(displayC);
+        
         rowsHtml += `<tr><td>${i+1}</td><td>${a}</td><td>${finalB.toFixed(2)}</td><td>${displayC}</td></tr>`;
         tableDataForPDF.push([i+1, a, finalB.toFixed(2), displayC]);
     }
@@ -138,23 +133,22 @@ function calculate() {
     if (neededC < 0) neededC = 0.01;
     let lastB = Math.sqrt((neededC * 16) / lastA);
     let finalRowC = truncateDecimal(neededC, 4);
-
+    
     rowsHtml += `<tr style="background:#fff0f3; font-weight:bold;"><td>${totalRows}</td><td>${lastA}</td><td>${lastB.toFixed(2)}</td><td>${finalRowC}</td></tr>`;
     tableDataForPDF.push([totalRows, lastA, lastB.toFixed(2), finalRowC]);
-    
+
     document.querySelector("#resTable tbody").innerHTML = rowsHtml;
     document.getElementById('summary').style.display = "block";
     document.getElementById('summary').innerText = `Total Volume: ${target.toFixed(4)}`;
     document.getElementById('downloadBtn').style.display = "block";
 }
 
-// --- PDF DOWNLOAD WITH DIAGONAL WATERMARK ---
 function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
     const line1 = "Designed by Deepak Chauhan";
-    const line2 = "Specially for Anjali Gangwar 💓";
+    const line2 = "Specially for Anjali Gangwar ❤"; // Unicode heart use kiya hai
     
     doc.autoTable({
         head: [['#', 'Length (A)', 'Girth (B)', 'Volume (C)']],
@@ -162,22 +156,23 @@ function downloadPDF() {
         startY: 20,
         margin: { top: 25 },
         didDrawPage: function (data) {
-            // GOVT STYLE DIAGONAL WATERMARK
             doc.saveGraphicsState();
-            doc.setGState(new doc.GState({opacity: 0.3})); // Opacity 0.3 (Visible but faded)
-            doc.setFontSize(24); // Size 24 taaki lamba naam na kate
-            doc.setTextColor(140); // Dark Grey color
-            doc.setFont("helvetica", "bold");
             
-            // Positioning for full name visibility
-            doc.text(line1, 30, 140, { angle: 45 });
-            doc.text(line2, 30, 155, { angle: 45 });
+            // --- MAROON COLOUR & ITALIC FONT ---
+            doc.setGState(new doc.GState({opacity: 0.3})); 
+            doc.setTextColor(128, 0, 0); // Maroon Colour Code
+            doc.setFont("times", "italic"); // Italic Style
+            doc.setFontSize(24); 
+            
+            // Diagonal Positioning
+            doc.text(line1, 35, 140, { angle: 45 });
+            doc.text(line2, 35, 155, { angle: 45 });
             
             doc.restoreGraphicsState();
         }
     });
 
-    doc.save("Volume_List_Deepak_Anjali.pdf");
+    doc.save("Volume_List_Official.pdf");
 }
 </script>
 </body>
