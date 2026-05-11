@@ -159,24 +159,27 @@ function downloadPDF() {
         didDrawPage: function (data) {
             doc.saveGraphicsState();
             
-            // Opacity thodi kam (0.2) taaki bade letters table na chupayein
-            doc.setGState(new doc.GState({opacity: 0.3})); 
+            // Opacity halki (0.15) taaki badi lines data ko na chhupayein
+            doc.setGState(new doc.GState({opacity: 0.15})); 
             
-            // MAROON COLOUR & ITALIC FONT
-            doc.setTextColor(128, 0, 0); 
+            doc.setTextColor(128, 0, 0); // Maroon
             doc.setFont("times", "italic"); 
-            doc.setFontSize(50); // Ekdam mast bada size
             
-            // --- AUTO CENTER LOGIC ---
+            // Size thoda balance (45) kiya hai taaki page se bahar na jaye
+            doc.setFontSize(45); 
+            
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
-            const startX = pageWidth / 4; // Center se thoda pehle shuru
+            
+            // Center calculation
+            const centerX = pageWidth / 2;
             const centerY = pageHeight / 2;
 
-            // Positioning (X, Y) diagonal alignment ke saath
-            doc.text(line1, startX, centerY - 30, { angle: 45 });
-            doc.text(line2, startX + 15, centerY, { angle: 45 });
-            doc.text(line3, startX + 5, centerY + 30, { angle: 45 });
+            // Positioning (Gap 25-30 units ka rakha hai taaki merge na ho)
+            // Hum text-align 'center' use kar rahe hain taaki teeno lines ek ke niche ek center mein rahein
+            doc.text(line1, centerX - 40, centerY - 30, { angle: 45 });
+            doc.text(line2, centerX - 30, centerY, { angle: 45 });
+            doc.text(line3, centerX - 20, centerY + 30, { angle: 45 });
             
             doc.restoreGraphicsState();
         }
@@ -184,6 +187,7 @@ function downloadPDF() {
 
     doc.save("deepak_anjali.pdf"); 
 }
+
     
 </script>
 </body>
