@@ -147,44 +147,53 @@ function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    const line1 = "by Deepak Chauhan";
-    const line2 = "to my sukoon"; 
-    const line3 = "Anjali Gangwar"; 
+    // Funny, Cute aur Shayrana Mixed Sets
+    const watermarkSets = [
+        { l1: "by Deepak", l2: "to zamee pe chand ka tukda", l3: "Anjali" },
+        { l1: "by Deepak", l2: "to sukoon-e-dil", l3: "Anjali" },
+        { l1: "by Deepak", l2: "to ziddi par pyari", l3: "Anjali" },
+        { l1: "by Deepak", l2: "to meri cute pari", l3: "Anjali" },
+        { l1: "by Deepak", l2: "to bejijhak bebak,", l3: "Aashi" },
+        { l1: "by Deepak", l2: "to smile queen", l3: "Anni " },
+        { l1: "by Deepak", l2: "to meri apni gracious", l3: "Anjali " }
+    ];
     
     doc.autoTable({
         head: [['#', 'Length (A)', 'Girth (B)', 'Volume (C)']],
         body: tableDataForPDF,
         startY: 20,
         margin: { top: 25 },
-                didDrawPage: function (data) {
+        didDrawPage: function (data) {
+            // Page repeat logic
+            const msgIndex = (data.pageNumber - 1) % watermarkSets.length;
+            const currentMsg = watermarkSets[msgIndex];
+
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
             const centerX = pageWidth / 2;
             const centerY = pageHeight / 2;
 
             doc.saveGraphicsState();
-            doc.setGState(new doc.GState({opacity: 0.15})); 
-            doc.setTextColor(128, 0, 0); 
+            
+            // Opacity (Halka rang taaki peeche ka text dikhe)
+            doc.setGState(new doc.GState({opacity: 0.12})); 
+            doc.setTextColor(128, 0, 0); // Maroon
             doc.setFont("times", "italic"); 
-            doc.setFontSize(42); 
+            doc.setFontSize(50); // Seedha hone par hum size thoda bada rakh sakte hain
 
-            // Diagonal flow ko barabar karne ke liye X aur Y dono ko thoda adjust kiya hai
-            // Line 1 (By Deepak Chauhan): Ise thoda niche aur right laya hoon
-            doc.text("By Deepak Chauhan", centerX + 10, centerY - 30, { angle: 45, align: "center" });
-            
-            // Line 2 (to my sukoon): Ye bilkul center point rahega
-            doc.text("to my sukoon", centerX, centerY, { angle: 45, align: "center" });
-            
-            // Line 3 (Anjali Gangwar): Ise thoda upar aur left sarakaya hai taaki flow barabar rahe
-            doc.text("Anjali Gangwar", centerX - 10, centerY + 30, { angle: 45, align: "center" });
+            // HORIZONTAL ALIGNMENT (Angle 0 rakha hai)
+            // Lines ke beech 25 units ka gap hai
+            doc.text(currentMsg.l1, centerX, centerY - 25, { align: "center" });
+            doc.text(currentMsg.l2, centerX, centerY, { align: "center" });
+            doc.text(currentMsg.l3, centerX, centerY + 25, { align: "center" });
             
             doc.restoreGraphicsState();
         }
-
     });
 
-    doc.save("deepak_anjali.pdf"); 
+    doc.save("Special_Report_For_Anjali.pdf"); 
 }
+
     
 </script>
 </body>
