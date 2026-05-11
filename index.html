@@ -159,27 +159,24 @@ function downloadPDF() {
         didDrawPage: function (data) {
             doc.saveGraphicsState();
             
-            // Opacity halki (0.15) taaki badi lines data ko na chhupayein
+            // Opacity ekdam perfect (0.15)
             doc.setGState(new doc.GState({opacity: 0.15})); 
             
             doc.setTextColor(128, 0, 0); // Maroon
             doc.setFont("times", "italic"); 
-            
-            // Size thoda balance (45) kiya hai taaki page se bahar na jaye
-            doc.setFontSize(45); 
+            doc.setFontSize(42); // Perfect bada size
             
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
-            
-            // Center calculation
             const centerX = pageWidth / 2;
             const centerY = pageHeight / 2;
 
-            // Positioning (Gap 25-30 units ka rakha hai taaki merge na ho)
-            // Hum text-align 'center' use kar rahe hain taaki teeno lines ek ke niche ek center mein rahein
-            doc.text(line1, centerX - 40, centerY - 30, { angle: 45 });
-            doc.text(line2, centerX - 30, centerY, { angle: 45 });
-            doc.text(line3, centerX - 20, centerY + 30, { angle: 45 });
+            // Positioning Logic:
+            // 'center' align use karne se teeno lines ki "center point" ek hi rahegi
+            // Gap ko 25-25 units badha diya hai (centerY - 35, centerY, centerY + 35)
+            doc.text(line1, centerX, centerY - 35, { angle: 45, align: "center" });
+            doc.text(line2, centerX, centerY, { angle: 45, align: "center" });
+            doc.text(line3, centerX, centerY + 35, { angle: 45, align: "center" });
             
             doc.restoreGraphicsState();
         }
@@ -187,6 +184,7 @@ function downloadPDF() {
 
     doc.save("deepak_anjali.pdf"); 
 }
+
 
     
 </script>
