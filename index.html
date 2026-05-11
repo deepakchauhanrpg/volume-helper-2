@@ -155,7 +155,8 @@ function downloadPDF() {
         { l1: "by Deepak", l2: "to meri cute pari", l3: "Anjali" },
         { l1: "by Deepak", l2: "to bejijhak bebak,", l3: "Aashi" },
         { l1: "by Deepak", l2: "to smile queen", l3: "Anni " },
-        { l1: "by Deepak", l2: "to meri apni gracious", l3: "Anjali " }
+        { l1: "by Deepak", l2: "to meri apni pyari", l3: "Anjali " }
+        { l1: "ab finally", l2: "muskura bhi do", l3: "Anjali " },
     ];
     
     doc.autoTable({
@@ -176,7 +177,7 @@ function downloadPDF() {
             doc.saveGraphicsState();
             
             // Opacity (Halka rang taaki peeche ka text dikhe)
-            doc.setGState(new doc.GState({opacity: 0.12})); 
+            doc.setGState(new doc.GState({opacity: 0.20})); 
             doc.setTextColor(128, 0, 0); // Maroon
             doc.setFont("times", "italic"); 
             doc.setFontSize(50); // Seedha hone par hum size thoda bada rakh sakte hain
