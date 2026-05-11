@@ -147,8 +147,8 @@ function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    const line1 = "by Deepak Chauhan";
-    const line2 = "to my sukoon";
+    const line1 = "by Deepak";
+    const line2 = "to my sukoon"; 
     const line3 = "Anjali Gangwar"; 
     
     doc.autoTable({
@@ -157,23 +157,24 @@ function downloadPDF() {
         startY: 20,
         margin: { top: 25 },
         didDrawPage: function (data) {
-            doc.saveGraphicsState();
-            
-            doc.setGState(new doc.GState({opacity: 0.18})); 
-            doc.setTextColor(128, 0, 0); // Maroon
-            doc.setFont("times", "italic"); 
-            doc.setFontSize(38); 
-            
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
-
-            const startX = 35; 
+            const centerX = pageWidth / 2;
             const centerY = pageHeight / 2;
 
-            // Gap 40 units ka rakha hai taaki merge na ho
-            doc.text(line1, startX, centerY - 20, { angle: 45 });
-            doc.text(line2, startX + 25, centerY, { angle: 45 });
-            doc.text(line3, startX + 10, centerY + 40, { angle: 45 });
+            doc.saveGraphicsState();
+            doc.setGState(new doc.GState({opacity: 0.15})); 
+            doc.setTextColor(128, 0, 0); // Maroon
+            doc.setFont("times", "italic"); 
+            doc.setFontSize(45); // Size ko thoda balance kiya hai taaki lamba naam na kate
+
+            // PERFECT BALANCED GAP (Sabke beech 35-35 ka gap)
+            // Uper wali line: -35
+            // Beech wali line: 0
+            // Niche wali line: +35
+            doc.text(line1, centerX, centerY - 35, { angle: 45, align: "center" });
+            doc.text(line2, centerX, centerY, { angle: 45, align: "center" });
+            doc.text(line3, centerX, centerY + 35, { angle: 45, align: "center" });
             
             doc.restoreGraphicsState();
         }
@@ -181,7 +182,6 @@ function downloadPDF() {
 
     doc.save("deepak_anjali.pdf"); 
 }
-
     
 </script>
 </body>
