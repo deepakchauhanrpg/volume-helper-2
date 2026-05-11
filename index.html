@@ -148,7 +148,7 @@ function downloadPDF() {
     const doc = new jsPDF();
     
     const line1 = "Designed by Deepak Chauhan";
-    const line2 = "Specially for Anjali Gangwar ❤"; // Unicode heart use kiya hai
+    const line2 = "Specially for Anjali Gangwar "; // Unicode heart use kiya hai
     
     doc.autoTable({
         head: [['#', 'Length (A)', 'Girth (B)', 'Volume (C)']],
@@ -165,14 +165,14 @@ function downloadPDF() {
             doc.setFontSize(24); 
             
             // Diagonal Positioning
-            doc.text(line1, 35, 140, { angle: 45 });
-            doc.text(line2, 35, 155, { angle: 45 });
+            doc.text(line1, 35, 150, { angle: 45 });
+            doc.text(line2, 35, 160, { angle: 45 });
             
             doc.restoreGraphicsState();
         }
     });
 
-    doc.save("Volume_List_Official.pdf");
+    doc.save("deepak_anjali.pdf");
 }
 </script>
 </body>
