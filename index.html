@@ -1,685 +1,269 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Volume Helper Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
     <style>
         :root {
-            --maroon: #800000;
-            --maroon-dark: #4d0000;
-            --maroon-light: #fff5f5;
-            --maroon-border: #f5c6c6;
-            --green: #2d8e47;
-            --green-light: #34a853;
-            --grey: #666;
-            --light-bg: #fdfdfd;
-            --white: #ffffff;
-            --shadow: 0 10px 30px rgba(128,0,0,0.08);
+            --primary-color: #800000;
+            --primary-hover: #600000;
+            --bg-gradient: linear-gradient(135deg, #800000 0%, #2b0000 100%);
+            --surface-color: #ffffff;
+            --text-color: #2d3748;
+            --text-muted: #718096;
+            --border-color: #e2e8f0;
+            --shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg-gradient); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; color: var(--text-color); }
+        .container { background: var(--surface-color); width: 100%; max-width: 500px; padding: 30px; border-radius: 24px; box-shadow: var(--shadow); position: relative; }
+        
+        /* Auth Screen Styles */
+        .auth-container { text-align: center; }
+        .lock-icon { width: 70px; height: 70px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 30px; }
+        .auth-title { font-size: 24px; font-weight: 700; color: var(--primary-color); margin-bottom: 5px; }
+        .auth-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 25px; }
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .input-group .toggle-pass { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; }
+        .input-group input { width: 100%; padding: 15px 45px; border: 2px solid var(--border-color); border-radius: 12px; font-size: 16px; outline: none; transition: 0.3s; }
+        .input-group input:focus { border-color: var(--primary-color); }
+        
+        /* Main App Styles */
+        #appScreen { display: none; }
+        .app-header { text-align: center; margin-bottom: 25px; }
+        .app-title { font-size: 26px; font-weight: 700; color: var(--primary-color); display: flex; justify-content: center; align-items: center; gap: 10px; }
+        
+        .section-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: block; }
+                /* Length Chips Grid */
+        .length-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+        .chip { border: 2px solid var(--border-color); padding: 10px; border-radius: 12px; text-align: center; font-weight: 600; cursor: pointer; user-select: none; transition: 0.2s; font-size: 14px; }
+        .chip.selected { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        
+        /* Row Form Layout */
+        .form-row { display: flex; gap: 15px; margin-bottom: 20px; }
+        .form-row .field { flex: 1; }
+        .field label { font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px; }
+        .field input { width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 12px; font-size: 15px; outline: none; transition: 0.3s; }
+        .field input:focus { border-color: var(--primary-color); }
+        
+        /* Premium Tree Input Box */
+        .tree-input-box { background: #fffcf5; border: 2px dashed #ecc94b; padding: 15px; border-radius: 16px; margin-bottom: 25px; }
+        .tree-input-box label { font-size: 13px; font-weight: 600; color: #b7791f; display: block; margin-bottom: 5px; }
+        .tree-input-box input { width: 100%; padding: 12px; border: 2px solid #f6e05e; border-radius: 10px; outline: none; font-size: 15px; }
+        .tree-input-box .hint { font-size: 11px; color: #b7791f; margin-top: 6px; display: block; }
 
-        body {
-            font-family: 'Lato', sans-serif;
-            background: var(--light-bg);
-            color: #333;
-            min-height: 100vh;
-        }
-
-        /* ── LOGIN SCREEN ── */
-        #loginScreen {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #2c0000 0%, #800000 50%, #2c0000 100%);
-            padding: 20px;
-        }
-
-        .login-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px 35px;
-            width: 100%;
-            max-width: 380px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
-            text-align: center;
-        }
-
-        .login-logo {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, var(--maroon), var(--maroon-dark));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 28px;
-        }
-
-        .login-card h2 {
-            font-family: 'Playfair Display', serif;
-            color: var(--maroon);
-            font-size: 24px;
-            margin-bottom: 6px;
-        }
-
-        .login-card p {
-            color: var(--grey);
-            font-size: 13px;
-            margin-bottom: 28px;
-        }
-
-        .login-input-wrap {
-            position: relative;
-            margin-bottom: 16px;
-        }
-
-        .login-input-wrap input {
-            width: 100%;
-            padding: 14px 45px 14px 16px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 15px;
-            font-family: 'Lato', sans-serif;
-            transition: border-color 0.2s;
-            outline: none;
-        }
-
-        .login-input-wrap input:focus {
-            border-color: var(--maroon);
-        }
-
-        .login-input-wrap input.shake {
-            animation: shake 0.4s ease;
-            border-color: #e53935;
-        }
-
-        .toggle-pass {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            font-size: 18px;
-            color: var(--grey);
-            user-select: none;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--maroon), var(--maroon-dark));
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            font-family: 'Lato', sans-serif;
-            transition: opacity 0.2s, transform 0.1s;
-        }
-
-        .login-btn:hover { opacity: 0.92; }
-        .login-btn:active { transform: scale(0.98); }
-
-        .login-error {
-            color: #e53935;
-            font-size: 13px;
-            margin-top: 10px;
-            display: none;
-        }
-
-        @keyframes shake {
-            0%,100% { transform: translateX(0); }
-            20% { transform: translateX(-8px); }
-            40% { transform: translateX(8px); }
-            60% { transform: translateX(-5px); }
-            80% { transform: translateX(5px); }
-        }
-                /* ── MAIN CONTENT ── */
-        #mainContent { display: none; padding: 20px 15px 40px; }
-
-        .card {
-            background: var(--white);
-            padding: 28px 24px;
-            border-radius: 18px;
-            box-shadow: var(--shadow);
-            max-width: 560px;
-            margin: 0 auto 24px;
-            border: 1px solid #f0e0e0;
-        }
-
-        .card-title {
-            font-family: 'Playfair Display', serif;
-            color: var(--maroon);
-            text-align: center;
-            font-size: 26px;
-            margin-bottom: 22px;
-        }
-
-        .section-label {
-            font-weight: 700;
-            font-size: 12px;
-            color: var(--grey);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-        }
-
-        /* Checkboxes */
-        .checkbox-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .cb-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--maroon-light);
-            border: 1.5px solid var(--maroon-border);
-            border-radius: 8px;
-            padding: 7px 12px;
-            cursor: pointer;
-            transition: all 0.15s;
-            user-select: none;
-        }
-
-        .cb-item:hover { background: #fde8e8; }
-        .cb-item input[type="checkbox"] { display: none; }
-
-        .cb-item.checked {
-            background: var(--maroon);
-            border-color: var(--maroon);
-            color: white;
-        }
-
-        .cb-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 3px;
-            border: 1.5px solid var(--maroon);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            flex-shrink: 0;
-        }
-
-        .cb-item.checked .cb-dot {
-            border-color: white;
-            background: white;
-            color: var(--maroon);
-        }
-
-        /* Input Row */
-        .input-row { display: flex; gap: 12px; margin-bottom: 16px; }
-        .input-group { flex: 1; }
-
-        .input-group label {
-            display: block;
-            font-weight: 700;
-            font-size: 12px;
-            color: var(--grey);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 11px 13px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 14px;
-            font-family: 'Lato', sans-serif;
-            transition: border-color 0.2s;
-            outline: none;
-        }
-
-        .input-group input:focus { border-color: var(--maroon); }
-        .input-group input.error { border-color: #e53935; background: #fff5f5; }
-        .err-msg { color: #e53935; font-size: 11px; margin-top: 4px; display: none; }
-
-        /* Tree Section */
-        .tree-section {
-            background: #fffaf0;
-            border: 1.5px dashed #c8a000;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 18px;
-        }
-
-        .tree-section .section-label { color: #7a5f00; margin-bottom: 12px; }
-
-        .optional-tag {
-            display: inline-block;
-            background: #fff3cd;
-            color: #856404;
-            font-size: 10px;
-            padding: 2px 7px;
-            border-radius: 20px;
-            margin-left: 6px;
-            font-weight: 700;
-            vertical-align: middle;
-        }
-
-        /* Buttons */
-        .btn-generate {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, var(--maroon), var(--maroon-dark));
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            font-family: 'Lato', sans-serif;
-            transition: opacity 0.2s, transform 0.1s;
-            margin-top: 6px;
-        }
-
-        .btn-generate:hover { opacity: 0.92; }
-        .btn-generate:active { transform: scale(0.98); }
-
-        .btn-download {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--green-light), var(--green));
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            font-family: 'Lato', sans-serif;
-            margin-top: 12px;
-            display: none;
-            transition: opacity 0.2s;
-        }
-
-        .btn-download:hover { opacity: 0.92; }
-
-        /* Summary */
-        .summary-box {
-            background: var(--maroon-light);
-            border: 1.5px dashed var(--maroon);
-            border-radius: 12px;
-            padding: 14px;
-            margin-top: 16px;
-            text-align: center;
-            color: var(--maroon);
-            font-weight: 700;
-            font-size: 15px;
-            white-space: pre-line;
-            display: none;
-        }
-
-        .loading-msg {
-            text-align: center;
-            color: var(--maroon);
-            font-weight: 700;
-            padding: 18px;
-            display: none;
-            font-size: 15px;
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            margin-top: 24px;
-            padding-top: 18px;
-            border-top: 1px solid #f0e0e0;
-        }
-
-        .footer p { font-size: 13px; color: #999; margin-bottom: 4px; }
-        .footer .heart-line { font-size: 15px; color: var(--maroon); font-weight: 700; }
-
-        /* ── TABLE OUTPUT ── */
-        .table-wrapper {
-            max-width: 560px;
-            margin: 0 auto;
-        }
-
-        .tree-block {
-            background: white;
-            border-radius: 14px;
-            box-shadow: var(--shadow);
-            margin-bottom: 16px;
-            overflow: hidden;
-            border: 1px solid #f0e0e0;
-        }
-
-        .tree-header {
-            background: linear-gradient(135deg, var(--maroon), var(--maroon-dark));
-            color: white;
-            padding: 12px 18px;
-            font-family: 'Playfair Display', serif;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .tree-header span.icon { font-size: 18px; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead th {
-            background: #fdf0f0;
-            color: var(--maroon);
-            padding: 10px 12px;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            font-weight: 700;
-            text-align: center;
-            border-bottom: 1px solid var(--maroon-border);
-        }
-
-        tbody td {
-            padding: 10px 12px;
-            text-align: center;
-            font-size: 13px;
-            border-bottom: 1px solid #f8f0f0;
-        }
-
-        tbody tr:last-child td { border-bottom: none; }
-        tbody tr:nth-child(even) { background: #fffafa; }
-
-        .tree-footer {
-            background: #fdf5f5;
-            padding: 10px 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1.5px dashed var(--maroon-border);
-            font-size: 13px;
-            color: var(--maroon);
-            font-weight: 700;
-        }
-
-        .normal-table-wrap {
-            background: white;
-            border-radius: 14px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            border: 1px solid #f0e0e0;
-        }
+        /* Actions Elements */
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-primary { background: var(--primary-color); color: white; margin-bottom: 15px; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-success { background: #2f855a; color: white; display: none; margin-bottom: 20px; }
+        .btn-success:hover { background: #22543d; }
+        
+        /* Output Summary Box */
+        .summary-box { background: #f7fafc; border: 2px solid var(--border-color); padding: 15px; border-radius: 14px; font-size: 14px; font-weight: 600; margin-bottom: 25px; white-space: pre-line; display: none; border-left: 5px solid var(--primary-color); }
+        
+        /* Tree Block Views */
+        .tree-block { background: #fffafb; border: 2px solid #fed7d7; border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .tree-header { font-size: 16px; font-weight: 700; color: var(--primary-color); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed #fed7d7; padding-bottom: 6px; }
+        .tree-footer { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--primary-color); background: #fff5f5; padding: 8px 12px; border-radius: 8px; margin-top: 10px; }
+        
+        /* Tables UI */
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 13px; }
+        th { background: #fff5f5; color: var(--primary-color); text-align: left; padding: 8px; font-weight: 600; border-bottom: 2px solid #fed7d7; }
+        td { padding: 8px; border-bottom: 1px solid #edf2f7; font-weight: 500; }
+        tr:nth-child(even) td { background: #fffcfc; }
+        
+        .normal-table-wrap { max-height: 350px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 20px; }
+        .normal-table-wrap table th { position: sticky; top: 0; background: #fff5f5; z-index: 1; }
+        
+        #loadingMsg { display: none; text-align: center; font-weight: 600; color: var(--primary-color); margin-bottom: 15px; }
+        .footer-credit { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 15px; }
     </style>
 </head>
 <body>
 
-<div id="loginScreen">
-    <div class="login-card">
-        <div class="login-logo">🪵</div>
-        <h2>Volume Helper Pro</h2>
-        <p>Apna password enter karein</p>
-
-        <div class="login-input-wrap">
-            <input type="password" id="passInput" placeholder="Password" onkeydown="if(event.key==='Enter') tryLogin()">
-            <span class="toggle-pass" onclick="togglePass()">👁</span>
+<div class="container">
+    <div id="authScreen" class="auth-container">
+        <div class="lock-icon"><i class="fa-solid fa-wood-log"></i></div>
+        <h2 class="auth-title">Volume Helper Pro</h2>
+        <p class="auth-subtitle">Apna password enter karein</p>
+        <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="passwordInput" placeholder="Password yahan likhein">
+            <i class="fa-solid fa-eye toggle-pass" onclick="togglePasswordView()"></i>
         </div>
-
-        <button class="login-btn" onclick="tryLogin()">Login</button>
-        <div class="login-error" id="loginError">❌ Galat password! Dobara try karo.</div>
+        <button class="btn btn-primary" onclick="checkAuth()">Login</button>
     </div>
-</div>
 
-<div id="mainContent">
-    <div class="card">
-        <h2 class="card-title">🪵 Volume Helper Pro</h2>
+    <div id="appScreen">
+        <div class="app-header">
+            <h2 class="app-title">🪵 Volume Helper Pro</h2>
+        </div>
 
-        <div class="section-label">Length (A) Select Karo:</div>
-        <div class="checkbox-grid" id="lengthCheckboxes"></div>
-
-        <div class="input-row">
-            <div class="input-group">
-                <label>Min Girth (B)</label>
-                <input type="number" id="minB" value="0.31" step="0.01">
-                <div class="err-msg" id="err-minB">Sahi number daalo</div>
+        <span class="section-label">Length (A) Select Karo:</span>
+        <div class="length-grid" id="lengthGrid">
             </div>
-            <div class="input-group">
-                <label>Max Girth (B)</label>
-                <input type="number" id="maxB" value="2.00" step="0.01">
-                <div class="err-msg" id="err-maxB">Max, Min se bada hona chahiye</div>
+
+        <div class="form-row">
+            <div class="field">
+                <label for="minB">Min Girth (B)</label>
+                <input type="number" id="minB" step="0.01" value="0.31">
+            </div>
+            <div class="field">
+                <label for="maxB">Max Girth (B)</label>
+                <input type="number" id="maxB" step="0.01" value="2.00">
             </div>
         </div>
 
-        <div class="input-row">
-            <div class="input-group">
-                <label>Target Volume (m³)</label>
-                <input type="number" id="target" value="500">
-                <div class="err-msg" id="err-target">Sahi number daalo</div>
+        <div class="form-row">
+            <div class="field">
+                <label for="target">Target Volume (C)</label>
+                <input type="number" id="target" step="0.0001" placeholder="e.g. 150.45">
             </div>
-            <div class="input-group">
-                <label>Total Logs</label>
-                <input type="number" id="totalLogs" value="1000">
-                <div class="err-msg" id="err-totalLogs">1 se 10000 ke beech rakho</div>
+            <div class="field">
+                <label for="totalLogs">Total Logs Count</label>
+                <input type="number" id="totalLogs" placeholder="e.g. 200">
             </div>
         </div>
 
-        <div class="tree-section">
-            <div class="section-label">
-                🌳 Tree Distribution
-                <span class="optional-tag">OPTIONAL</span>
-            </div>
-            <div class="input-row" style="margin-bottom:0;">
-                <div class="input-group">
-                    <label>Number of Trees</label>
-                    <input type="number" id="numTrees" placeholder="e.g. 200">
-                </div>
-                <div class="input-group">
-                    <label>Min Logs/Tree</label>
-                    <input type="number" id="minLogs" placeholder="e.g. 3">
-                </div>
-                <div class="input-group">
-                    <label>Max Logs/Tree</label>
-                    <input type="number" id="maxLogs" placeholder="e.g. 6">
-                </div>
-            </div>
-            <p style="font-size:11px; color:#7a5f00; margin-top:10px;">
-                💡 Khali chhodo toh normal list generate hogi
-            </p>
+        <div class="tree-input-box">
+            <label for="numTrees">🌲 Number of Trees (Optional)</label>
+            <input type="number" id="numTrees" placeholder="e.g. 15">
+            <span class="hint">💡 Khali chhodo toh normal list generate hogi</span>
         </div>
 
-        <button class="btn-generate" onclick="calculate()">🪵 Generate List</button>
-        <button class="btn-download" id="downloadBtn" onclick="downloadPDF()">📄 Download PDF</button>
-
-        <div class="loading-msg" id="loadingMsg">⏳ Generating... please wait</div>
+        <div id="loadingMsg"><i class="fa-solid fa-spinner fa-spin"></i> Processing calculation...</div>
+        
+        <button class="btn btn-primary" id="generateBtn" onclick="generateVolumeList()">
+            <i class="fa-solid fa-layer-group"></i> Generate List
+        </button>
+        
         <div class="summary-box" id="summaryBox"></div>
+        
+        <button class="btn btn-success" id="downloadBtn" onclick="downloadPDF()">
+            <i class="fa-solid fa-file-pdf"></i> Download PDF
+        </button>
 
-        <div class="footer">
-            <p>Designed by <strong>Deepak Chauhan</strong></p>
-            <p class="heart-line">Specially for <strong>Anjali Gangwar ❤</strong></p>
-        </div>
+        <div id="tableWrapper"></div>
+
+        <div class="footer-credit">Designed by Deepak Chauhan</div>
     </div>
-
-    <div class="table-wrapper" id="tableWrapper"></div>
 </div>
-
 <script>
-var SHEET_URL = "https://script.google.com/macros/s/AKfycbwxSUFIxtroojnp7UHsYZRPqx0iBOpQmaHuHv_ld8-Duz97012D5ioy2NnuqU023iAm/exec";
-var PASS_HASH = btoa("Anjali143");
-var LENGTH_OPTIONS = [0.95, 1.25, 1.55, 1.85, 2.15, 2.45, 2.75, 3.05, 3.35];
+    // Pure Configuration Settings
+    var AUTH_KEY  = "deepakni"; 
+    var SHEET_URL = "https://script.google.com/macros/s/AKfycbyb55gXpXv_j2lH_S_z2lK6C_qg6m7bV9H8W7Y1/exec"; 
 
-var structuredTreeData = []; 
-var displayGrandSummary = "";
+    var defaultLengths = [0.95, 1.25, 1.55, 1.85, 2.15, 2.45, 2.75, 3.05, 3.35];
+    var selectedLengths = [0.95, 1.25, 1.55, 1.85, 2.15, 2.45, 2.75, 3.05, 3.35];
+    var structuredTreeData = [];
+    var displayGrandSummary = "";
 
-function tryLogin() {
-    var val = document.getElementById('passInput').value;
-    if (btoa(val) === PASS_HASH) {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
-        buildCheckboxes();
-    } else {
-        var inp = document.getElementById('passInput');
-        inp.classList.add('shake');
-        inp.classList.add('error');
-        document.getElementById('loginError').style.display = 'block';
-        setTimeout(function() { inp.classList.remove('shake'); }, 500);
-    }
-}
+    // Initialization Setup
+    window.onload = function() {
+        renderChips();
+    };
 
-function togglePass() {
-    var inp = document.getElementById('passInput');
-    inp.type = inp.type === 'password' ? 'text' : 'password';
-}
-
-function buildCheckboxes() {
-    var wrap = document.getElementById('lengthCheckboxes');
-    wrap.innerHTML = "";
-    LENGTH_OPTIONS.forEach(function(val) {
-        var div = document.createElement('div');
-        div.className = 'cb-item checked';
-        div.dataset.val = val;
-        div.innerHTML = '<div class="cb-dot">✓</div><span>' + val + '</span>';
-        div.onclick = function() {
-            this.classList.toggle('checked');
-            this.querySelector('.cb-dot').innerHTML = this.classList.contains('checked') ? '✓' : '';
-        };
-        wrap.appendChild(div);
-    });
-}
-
-function getSelectedLengths() {
-    var items = document.querySelectorAll('.cb-item.checked');
-    var vals = [];
-    items.forEach(function(el) { vals.push(parseFloat(el.dataset.val)); });
-    return vals;
-}
-
-function truncDec(num, fixed) {
-    var re = new RegExp('^-?\\d+(?:\\.\\d{0,' + fixed + '})?');
-    var m = num.toString().match(re);
-    return m ? m[0] : num.toFixed(fixed);
-}
-
-function randInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function validate() {
-    var ok = true;
-    ['minB','maxB','target','totalLogs'].forEach(function(id) {
-        document.getElementById(id).classList.remove('error');
-        document.getElementById('err-' + id).style.display = 'none';
-    });
-
-    if (getSelectedLengths().length === 0) {
-        alert("Kam se kam ek Length select karo!");
-        return false;
+    function togglePasswordView() {
+        var el = document.getElementById('passwordInput');
+        el.type = (el.type === 'password') ? 'text' : 'password';
     }
 
-    var minG = parseFloat(document.getElementById('minB').value);
-    if (isNaN(minG) || minG <= 0) {
-        document.getElementById('minB').classList.add('error');
-        document.getElementById('err-minB').style.display = 'block';
-        ok = false;
+    function checkAuth() {
+        var input = document.getElementById('passwordInput').value.trim();
+        if(input === AUTH_KEY) {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'block';
+        } else {
+            alert("Galat Password Hai Bhai!");
+        }
     }
 
-    var maxG = parseFloat(document.getElementById('maxB').value);
-    if (isNaN(maxG) || maxG <= minG) {
-        document.getElementById('maxB').classList.add('error');
-        document.getElementById('err-maxB').style.display = 'block';
-        ok = false;
+    function renderChips() {
+        var grid = document.getElementById('lengthGrid');
+        grid.innerHTML = '';
+        defaultLengths.forEach(function(val) {
+            var chip = document.createElement('div');
+            chip.className = 'chip selected';
+            chip.innerText = val.toFixed(2);
+            chip.onclick = function() {
+                if(chip.classList.contains('selected')) {
+                    chip.classList.remove('selected');
+                    selectedLengths = selectedLengths.filter(function(v) { return v !== val; });
+                } else {
+                    chip.classList.add('selected');
+                    selectedLengths.push(val);
+                }
+            };
+            grid.appendChild(chip);
+        });
     }
 
-    var target = parseFloat(document.getElementById('target').value);
-    if (isNaN(target) || target <= 0) {
-        document.getElementById('target').classList.add('error');
-        document.getElementById('err-target').style.display = 'block';
-        ok = false;
+    function getSelectedLengths() {
+        return selectedLengths.length > 0 ? selectedLengths : defaultLengths;
     }
 
-    var logs = parseInt(document.getElementById('totalLogs').value);
-    if (isNaN(logs) || logs < 1 || logs > 10000) {
-        document.getElementById('totalLogs').classList.add('error');
-        document.getElementById('err-totalLogs').style.display = 'block';
-        ok = false;
+    function truncDec(num, dec) {
+        var calc = Math.pow(10, dec);
+        return (Math.trunc(num * calc) / calc).toFixed(dec);
     }
-    return ok;
-}
 
-function calculate() {
-    if (!validate()) return;
+    function generateVolumeList() {
+        var target    = parseFloat(document.getElementById('target').value);
+        var totalLogs = parseInt(document.getElementById('totalLogs').value);
+        var minG      = parseFloat(document.getElementById('minB').value);
+        var maxG      = parseFloat(document.getElementById('maxB').value);
 
-    var target    = parseFloat(document.getElementById('target').value);
-    var totalLogs = parseInt(document.getElementById('totalLogs').value);
-    var minG      = parseFloat(document.getElementById('minB').value);
-    var maxG      = parseFloat(document.getElementById('maxB').value);
-    var aVals     = getSelectedLengths();
+        if(isNaN(target) || isNaN(totalLogs) || isNaN(minG) || isNaN(maxG)) {
+            alert("Saari fields sahi se fill karo bhai!");
+            return;
+        }
 
-    var numTreesVal = document.getElementById('numTrees').value.trim();
-    var minLogsVal  = document.getElementById('minLogs').value.trim();
-    var maxLogsVal  = document.getElementById('maxLogs').value.trim();
-    var treeMode    = numTreesVal !== '' && minLogsVal !== '' && maxLogsVal !== '';
+        document.getElementById('loadingMsg').style.display = 'block';
+        document.getElementById('summaryBox').style.display = 'none';
+        document.getElementById('downloadBtn').style.display = 'none';
+        document.getElementById('tableWrapper').innerHTML = '';
 
-    document.getElementById('loadingMsg').style.display = 'block';
-    document.getElementById('summaryBox').style.display = 'none';
-    document.getElementById('downloadBtn').style.display = 'none';
-    document.getElementById('tableWrapper').innerHTML = '';
+        var aVals = getSelectedLengths();
+        trackUsage(aVals, target, totalLogs);
 
-    setTimeout(function() {
+        setTimeout(function() {
+            runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals);
+        }, 150);
+    }
+        function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
+        var numTreesVal = document.getElementById('numTrees').value.trim();
+        var treeMode    = numTreesVal !== '';
         var totalTrees = treeMode ? parseInt(numTreesVal) : 1;
-        var globalAttempts = 0;
-        var maxGlobalAttempts = 200; 
+
+        var treeLogsDistribution = [];
+        if(treeMode) {
+            var base = Math.floor(totalLogs / totalTrees);
+            for(var t=0; t<totalTrees; t++) treeLogsDistribution.push(base);
+            var rem = totalLogs - (base * totalTrees);
+            for(var r=0; r<rem; r++) treeLogsDistribution[r]++;
+        } else {
+            treeLogsDistribution.push(totalLogs);
+        }
+
         var processingSuccess = false;
-
         var tempStructuredData = [];
-        var finalGrandTotal = "0.0000";
+        var currentVolSum = 0;
+        var logGlobalCounter = 0;
 
-        while (globalAttempts < maxGlobalAttempts && !processingSuccess) {
-            globalAttempts++;
+        for (var attempt = 0; attempt < 400; attempt++) {
+            currentVolSum = 0;
+            logGlobalCounter = 0;
             tempStructuredData = [];
-            var treeLogsDistribution = [];
-
-            if (treeMode) {
-                var minLog = parseInt(minLogsVal);
-                var maxLog = parseInt(maxLogsVal);
-                var assigned = 0;
-
-                for (var t = 0; t < totalTrees; t++) {
-                    var r = randInt(minLog, maxLog);
-                    treeLogsDistribution.push(r);
-                    assigned += r;
-                }
-
-                var diff = totalLogs - assigned;
-                var safetyLoopCounter = 0;
-                while (diff !== 0 && safetyLoopCounter < 3000) {
-                    var idx = Math.floor(Math.random() * totalTrees);
-                    if (diff > 0 && treeLogsDistribution[idx] < maxLog) {
-                        treeLogsDistribution[idx]++;
-                        diff--;
-                    } else if (diff < 0 && treeLogsDistribution[idx] > minLog) {
-                        treeLogsDistribution[idx]--;
-                        diff++;
-                    }
-                    safetyLoopCounter++;
-                }
-            } else {
-                treeLogsDistribution.push(totalLogs);
-            }
-
-            var avgA = aVals.reduce(function(x, y) { return x + y; }, 0) / aVals.length;
-            var idealB = Math.sqrt((target * 16) / (totalLogs * avgA));
-
-            var currentVolSum = 0;
-            var logGlobalCounter = 0;
             var isGenerationValid = true;
 
             for (var t = 0; t < totalTrees; t++) {
@@ -689,267 +273,328 @@ function calculate() {
 
                 for (var l = 0; l < currentTreeLogLimit; l++) {
                     logGlobalCounter++;
-                    var a = aVals[Math.floor(Math.random() * aVals.length)];
-                    var displayC = "0.0000";
-                    var finalB = 0;
-
-                    if (logGlobalCounter === totalLogs) {
-                        var neededC = target - currentVolSum;
-                        if (neededC < 0) neededC = 0.0001;
-                        var lastB = Math.sqrt((neededC * 16) / a);
-                        
-                        if (lastB < minG || lastB > maxG) {
-                            isGenerationValid = false;
-                            break; 
-                        }
-                        
-                        finalB = parseFloat(lastB.toFixed(2));
-                        var lastC = (a * Math.pow(finalB, 2)) / 16;
-                        displayC = truncDec(lastC, 4);
-                    } else {
-                        var b = idealB + (Math.random() * 0.2 - 0.1);
-                        if (b < minG) b = minG;
-                        if (b > maxG) b = maxG;
-                        finalB = parseFloat(b.toFixed(2));
-                        var rawC = (a * Math.pow(finalB, 2)) / 16;
-                        displayC = truncDec(rawC, 4);
+                    var randomA = aVals[Math.floor(Math.random() * aVals.length)];
+                    
+                    var remLogs = totalLogs - logGlobalCounter;
+                    var remVol = target - currentVolSum;
+                    
+                    var minPossibleB = minG, maxPossibleB = maxG;
+                    if (remLogs > 0) {
+                        var avgFutureA = 2.15;
+                        var neededAvgB = Math.sqrt((remVol * 16) / (remLogs * avgFutureA));
+                        minPossibleB = Math.max(minG, neededAvgB - 0.25);
+                        maxPossibleB = Math.min(maxG, neededAvgB + 0.25);
+                        if(minPossibleB > maxPossibleB) { minPossibleB = minG; maxPossibleB = maxG; }
                     }
 
-                    currentVolSum += parseFloat(displayC);
-                    treeVolSum += parseFloat(displayC);
+                    var randomB = Math.random() * (maxPossibleB - minPossibleB) + minPossibleB;
+                    randomB = parseFloat(randomB.toFixed(2));
+                    
+                    var calcC = truncDec((randomA * Math.pow(randomB, 2)) / 16, 4);
 
-                    treeLogsArray.push({
-                        index: l + 1,
-                        length: a,
-                        girth: finalB.toFixed(2),
-                        volume: displayC
-                    });
+                    if (logGlobalCounter === totalLogs) {
+                        var finalNeededC = target - currentVolSum;
+                        if (finalNeededC < 0.0005) { isGenerationValid = false; break; }
+                        
+                        calcC = truncDec(finalNeededC, 4);
+                        var reqB = Math.sqrt((finalNeededC * 16) / randomA);
+                        if (reqB < minG || reqB > maxG) { isGenerationValid = false; break; }
+                        randomB = parseFloat(reqB.toFixed(2));
+                    }
+
+                    currentVolSum += parseFloat(calcC);
+                    treeVolSum += parseFloat(calcC);
+
+                    treeLogsArray.push({ index: logGlobalCounter, length: randomA, girth: randomB.toFixed(2), volume: calcC });
                 }
 
                 if (!isGenerationValid) break;
-
-                tempStructuredData.push({
-                    treeNum: t + 1,
-                    logsCount: currentTreeLogLimit,
-                    totalVolume: truncDec(treeVolSum, 4),
-                    logs: treeLogsArray
-                });
+                tempStructuredData.push({ treeNum: t + 1, logsCount: currentTreeLogLimit, totalVolume: truncDec(treeVolSum, 4), logs: treeLogsArray });
             }
 
-            if (isGenerationValid) {
+            if (isGenerationValid && Math.abs(currentVolSum - target) < 0.0005) {
                 structuredTreeData = tempStructuredData;
-                finalGrandTotal = truncDec(currentVolSum, 4);
+                displayGrandSummary = '✅ Total Logs: ' + totalLogs + ' | Total Volume: ' + truncDec(currentVolSum, 4) + ' m³';
                 processingSuccess = true;
+                break;
             }
         }
 
-        if (!processingSuccess) {
-            alert("⚠️ Inputs ke beech mathematical combination match nahi ho raha! forced balancing apply ki ja rhi.");
-            calculateFallback();
-            return;
-        }
+        if (processingSuccess) {
+            var wrapper = document.getElementById('tableWrapper');
+            wrapper.innerHTML = '';
 
-        {
- var wrapper = document.getElementById('tableWrapper');
-    wrapper.innerHTML = '';
-
-    for (var t = 0; t < totalTrees; t++) {
-        var currentTreeLogLimit = treeLogsDistribution[t];
-        var treeLogsArray = [];
-        var treeVolSum = 0;
-
-        for (var l = 0; l < currentTreeLogLimit; l++) {
-            logGlobalCounter++;
-            var a = aVals[Math.floor(Math.random() * aVals.length)];
-            var finalB = parseFloat(idealB.toFixed(2));
-            var displayC = truncDec((a * Math.pow(finalB, 2)) / 16, 4);
-
-            if (logGlobalCounter === totalLogs) {
-                var neededC = target - currentVolSum;
-                if (neededC < 0) neededC = 0.0001;
-                displayC = truncDec(neededC, 4);
-                var computedB = Math.sqrt((neededC * 16) / a);
-                if(computedB < minG) computedB = minG;
-                if(computedB > maxG) computedB = maxG;
-                finalB = parseFloat(computedB.toFixed(2));
+            for (var t = 0; t < totalTrees; t++) {
+                var tData = structuredTreeData[t];
+                if (treeMode) {
+                    var treeBlock = document.createElement('div');
+                    treeBlock.className = 'tree-block';
+                    var hdr = document.createElement('div'); hdr.className = 'tree-header'; hdr.innerHTML = '<span class="icon">🌳</span> Tree ' + tData.treeNum; treeBlock.appendChild(hdr);
+                    var tbl = document.createElement('table'); tbl.innerHTML = '<thead><tr><th># Serial</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
+                    var tbody = document.createElement('tbody');
+                    tData.logs.forEach(function(log) {
+                        var tr = document.createElement('tr'); tr.innerHTML = '<td>' + log.index + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>'; tbody.appendChild(tr);
+                    });
+                    tbl.appendChild(tbody); treeBlock.appendChild(tbl);
+                    var ftr = document.createElement('div'); ftr.className = 'tree-footer'; ftr.innerHTML = '<span>🪵 ' + tData.logsCount + ' Logs</span><span>Total Volume: ' + tData.totalVolume + ' m³</span>'; treeBlock.appendChild(ftr);
+                    wrapper.appendChild(treeBlock);
+                }
             }
 
-            currentVolSum += parseFloat(displayC);
-            treeVolSum += parseFloat(displayC);
+            if (!treeMode) {
+                var normalWrap = document.createElement('div'); normalWrap.className = 'normal-table-wrap';
+                var tbl = document.createElement('table'); tbl.innerHTML = '<thead><tr><th># Serial</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
+                var tbody = document.createElement('tbody');
+                structuredTreeData[0].logs.forEach(function(log) {
+                    var tr = document.createElement('tr'); tr.innerHTML = '<td>' + log.index + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>'; tbody.appendChild(tr);
+                });
+                tbl.appendChild(tbody); normalWrap.appendChild(tbl); wrapper.appendChild(normalWrap);
+            }
 
-            treeLogsArray.push({ index: logGlobalCounter, length: a, girth: finalB.toFixed(2), volume: displayC });
+            document.getElementById('summaryBox').innerText = displayGrandSummary;
+            document.getElementById('loadingMsg').style.display = 'none';
+            document.getElementById('summaryBox').style.display = 'block';
+            document.getElementById('downloadBtn').style.display = 'block';
+        } else {
+            if (confirm("⚠️ Precision engine matches failed! Forced mathematical backup chalayein?")) {
+                calculateFallback();
+            } else {
+                document.getElementById('loadingMsg').style.display = 'none';
+            }
+        }
+    }
+
+    function calculateFallback() {
+        var target    = parseFloat(document.getElementById('target').value);
+        var totalLogs = parseInt(document.getElementById('totalLogs').value);
+        var minG      = parseFloat(document.getElementById('minB').value);
+        var maxG      = parseFloat(document.getElementById('maxB').value);
+        var aVals     = getSelectedLengths();
+        var numTreesVal = document.getElementById('numTrees').value.trim();
+        var treeMode    = numTreesVal !== '';
+        var totalTrees = treeMode ? parseInt(numTreesVal) : 1;
+
+        var treeLogsDistribution = [];
+        if(treeMode) {
+            var base = Math.floor(totalLogs/totalTrees);
+            for(var t=0; t<totalTrees; t++) treeLogsDistribution.push(base);
+            var rem = totalLogs - (base*totalTrees);
+            for(var r=0; r<rem; r++) treeLogsDistribution[r]++;
+        } else {
+            treeLogsDistribution.push(totalLogs);
         }
 
-        structuredTreeData.push({ treeNum: t + 1, logsCount: currentTreeLogLimit, totalVolume: truncDec(treeVolSum, 4), logs: treeLogsArray });
+        var avgA = aVals.reduce(function(x, y) { return x + y; }, 0) / aVals.length;
+        var idealB = Math.sqrt((target * 16) / (totalLogs * avgA));
+        if(idealB < minG) idealB = minG;
+        if(idealB > maxG) idealB = maxG;
 
-        if (treeMode) {
-            var treeBlock = document.createElement('div');
-            treeBlock.className = 'tree-block';
-            var hdr = document.createElement('div'); hdr.className = 'tree-header'; hdr.innerHTML = '<span class="icon">🌳</span> Tree ' + (t + 1); treeBlock.appendChild(hdr);
+        var currentVolSum = 0;
+        var logGlobalCounter = 0;
+        structuredTreeData = [];
+
+        var wrapper = document.getElementById('tableWrapper');
+        wrapper.innerHTML = '';
+
+        for (var t = 0; t < totalTrees; t++) {
+            var currentTreeLogLimit = treeLogsDistribution[t];
+            var treeLogsArray = [];
+            var treeVolSum = 0;
+
+            for (var l = 0; l < currentTreeLogLimit; l++) {
+                logGlobalCounter++;
+                var a = aVals[Math.floor(Math.random() * aVals.length)];
+                var finalB = parseFloat(idealB.toFixed(2));
+                var displayC = truncDec((a * Math.pow(finalB, 2)) / 16, 4);
+
+                if (logGlobalCounter === totalLogs) {
+                    var neededC = target - currentVolSum;
+                    if (neededC < 0) neededC = 0.0001;
+                    displayC = truncDec(neededC, 4);
+                    var computedB = Math.sqrt((neededC * 16) / a);
+                    if(computedB < minG) computedB = minG;
+                    if(computedB > maxG) computedB = maxG;
+                    finalB = parseFloat(computedB.toFixed(2));
+                }
+
+                currentVolSum += parseFloat(displayC);
+                treeVolSum += parseFloat(displayC);
+
+                treeLogsArray.push({ index: logGlobalCounter, length: a, girth: finalB.toFixed(2), volume: displayC });
+            }
+
+            structuredTreeData.push({ treeNum: t + 1, logsCount: currentTreeLogLimit, totalVolume: truncDec(treeVolSum, 4), logs: treeLogsArray });
+
+            if (treeMode) {
+                var treeBlock = document.createElement('div');
+                treeBlock.className = 'tree-block';
+                var hdr = document.createElement('div'); hdr.className = 'tree-header'; hdr.innerHTML = '<span class="icon">🌳</span> Tree ' + (t + 1); treeBlock.appendChild(hdr);
+                var tbl = document.createElement('table'); tbl.innerHTML = '<thead><tr><th># Serial</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
+                var tbody = document.createElement('tbody');
+                treeLogsArray.forEach(function(log) {
+                    var tr = document.createElement('tr'); tr.innerHTML = '<td>' + log.index + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>'; tbody.appendChild(tr);
+                });
+                tbl.appendChild(tbody); treeBlock.appendChild(tbl);
+                var ftr = document.createElement('div'); ftr.className = 'tree-footer'; ftr.innerHTML = '<span>🪵 ' + currentTreeLogLimit + ' Logs</span><span>Total Volume: ' + truncDec(treeVolSum, 4) + ' m³</span>'; treeBlock.appendChild(ftr);
+                wrapper.appendChild(treeBlock);
+            }
+        }
+
+        if (!treeMode) {
+            var normalWrap = document.createElement('div'); normalWrap.className = 'normal-table-wrap';
             var tbl = document.createElement('table'); tbl.innerHTML = '<thead><tr><th># Serial</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
             var tbody = document.createElement('tbody');
-            treeLogsArray.forEach(function(log) {
+            structuredTreeData[0].logs.forEach(function(log) {
                 var tr = document.createElement('tr'); tr.innerHTML = '<td>' + log.index + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>'; tbody.appendChild(tr);
             });
-            tbl.appendChild(tbody); treeBlock.appendChild(tbl);
-            var ftr = document.createElement('div'); ftr.className = 'tree-footer'; ftr.innerHTML = '<span>🪵 ' + currentTreeLogLimit + ' Logs</span><span>Total Volume: ' + truncDec(treeVolSum, 4) + ' m³</span>'; treeBlock.appendChild(ftr);
-            wrapper.appendChild(treeBlock);
-        }
-    }
-
-    if (!treeMode) {
-        var normalWrap = document.createElement('div'); normalWrap.className = 'normal-table-wrap';
-        var tbl = document.createElement('table'); tbl.innerHTML = '<thead><tr><th># Serial</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
-        var tbody = document.createElement('tbody');
-        structuredTreeData[0].logs.forEach(function(log) {
-            var tr = document.createElement('tr'); tr.innerHTML = '<td>' + log.index + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>'; tbody.appendChild(tr);
-        });
-        tbl.appendChild(tbody); normalWrap.appendChild(tbl); wrapper.appendChild(normalWrap);
-    }
-
-    displayGrandSummary = '✅ Total Logs: ' + totalLogs + ' | Total Volume: ' + truncDec(currentVolSum, 4) + ' m³\n⚠️ forced balance apply.';
-    document.getElementById('summaryBox').innerText = displayGrandSummary;
-    document.getElementById('loadingMsg').style.display = 'none';
-    document.getElementById('summaryBox').style.display = 'block';
-    document.getElementById('downloadBtn').style.display = 'block';
-}
-
-function trackUsage(aVals, target, totalLogs) {
-    var device = navigator.userAgent;
-    var now = new Date();
-    var dateStr = now.getDate().toString().padStart(2,'0') + '/' + (now.getMonth()+1).toString().padStart(2,'0') + '/' + now.getFullYear() + ' ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-
-    fetch('https://ipapi.co/json/')
-        .then(function(r){ return r.json(); })
-        .then(function(geo) {
-            sendPayload({ datetime: dateStr, lengths: aVals.join(', '), target: target, rows: totalLogs, device: device, city: geo.city || 'Unknown', region: geo.region || 'Unknown' });
-        })
-        .catch(function() {
-            sendPayload({ datetime: dateStr, lengths: aVals.join(', '), target: target, rows: totalLogs, device: device, city: 'Unknown', region: 'Unknown' });
-        });
-}
-
-function sendPayload(payload) {
-    fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-}
-
-function downloadPDF() {
-    try {
-        var jsPDF = window.jspdf.jsPDF;
-        var doc = new jsPDF('p', 'mm', 'a4');
-
-        var watermarks = [
-            ["by Deepak", "Zameen pe chaand ka tukda", "Anjali"],
-            ["by Deepak", "Dil ka sukoon", "Anjali"],
-            ["by Deepak", "Ziddi par pyaari", "Anjali"],
-            ["by Deepak", "Meri cute pari", "Anjali"],
-            ["by Deepak", "Bejhijhak bebaak", "Aashi"],
-            ["by Deepak", "Smile queen", "Anni"],
-            ["by Deepak", "Meri apni pyaari", "Anjali"],
-            ["ab finally", "Muskura bhi do", "Anjali"]
-        ];
-
-        var pageW = doc.internal.pageSize.getWidth();
-        var pageH = doc.internal.pageSize.getHeight();
-        var today = new Date();
-        var dateStr = today.getDate().toString().padStart(2,'0') + '/' + (today.getMonth()+1).toString().padStart(2,'0') + '/' + today.getFullYear();
-        var cleanSummaryLine = displayGrandSummary ? displayGrandSummary.split('\n')[0] : "";
-
-        var isTreeMode = document.getElementById('numTrees').value.trim() !== "";
-        var pdfBodyRows = [];
-        var headers = [['# Serial', 'Length (A)', 'Girth (B)', 'Volume (C)']];
-
-        if (!structuredTreeData || structuredTreeData.length === 0) {
-            alert("Pehle list generate kijiye!");
-            return;
+            tbl.appendChild(tbody); normalWrap.appendChild(tbl); wrapper.appendChild(normalWrap);
         }
 
-        structuredTreeData.forEach(function(tree) {
-            if (isTreeMode) {
-                pdfBodyRows.push([{ content: '🌳 TREE ' + tree.treeNum, colSpan: 4, styles: { fillColor: [128, 0, 0], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' } }]);
-            }
-            tree.logs.forEach(function(log) {
-                pdfBodyRows.push([log.index, log.length, log.girth, log.volume]);
+        displayGrandSummary = '✅ Total Logs: ' + totalLogs + ' | Total Volume: ' + truncDec(currentVolSum, 4) + ' m³\n⚠️ forced balance apply.';
+        document.getElementById('summaryBox').innerText = displayGrandSummary;
+        document.getElementById('loadingMsg').style.display = 'none';
+        document.getElementById('summaryBox').style.display = 'block';
+        document.getElementById('downloadBtn').style.display = 'block';
+                                                 }
+        function trackUsage(aVals, target, totalLogs) {
+        var device = navigator.userAgent;
+        var now = new Date();
+        var dateStr = now.getDate().toString().padStart(2,'0') + '/' + (now.getMonth()+1).toString().padStart(2,'0') + '/' + now.getFullYear() + ' ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+        fetch('https://ipapi.co/json/')
+            .then(function(r){ return r.json(); })
+            .then(function(geo) {
+                sendPayload({ datetime: dateStr, lengths: aVals.join(', '), target: target, rows: totalLogs, device: device, city: geo.city || 'Unknown', region: geo.region || 'Unknown' });
+            })
+            .catch(function() {
+                sendPayload({ datetime: dateStr, lengths: aVals.join(', '), target: target, rows: totalLogs, device: device, city: 'Unknown', region: 'Unknown' });
             });
-            if (isTreeMode) {
-                pdfBodyRows.push([{ content: '📊 Logs Count: ' + tree.logsCount + '    |    Tree Volume: ' + tree.totalVolume + ' m³', colSpan: 4, styles: { fillColor: [255, 245, 245], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'center' } }]);
-            }
-        });
-
-        doc.autoTable({
-            head: headers,
-            body: pdfBodyRows,
-            startY: 32,
-            margin: { top: 35, bottom: 20 },
-            styles: { fontSize: 9, cellPadding: 4 },
-            headStyles: { fillColor: [128, 0, 0], textColor: 255, fontStyle: 'bold' },
-            alternateRowStyles: { fillColor: [255, 245, 245] },
-
-            didDrawPage: function(data) {
-                doc.setFont('times', 'bold');
-                doc.setFontSize(15);
-                doc.setTextColor(128, 0, 0);
-                doc.text('Volume Helper Report', pageW / 2, 11, { align: 'center' });
-
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(8);
-                doc.setTextColor(120, 120, 120);
-                doc.text('Generated by: Deepak Chauhan', 14, 18);
-                doc.text('Date: ' + dateStr, pageW - 14, 18, { align: 'right' });
-
-                doc.setFontSize(9);
-                doc.setTextColor(128, 0, 0);
-                doc.text(cleanSummaryLine, pageW / 2, 25, { align: 'center' });
-
-                var idx = (data.pageNumber - 1) % watermarks.length;
-                var wm  = watermarks[idx];
-                var cx  = pageW / 2;
-                var cy  = pageH / 2;
-
-                doc.saveGraphicsState();
-                
-                doc.setDrawColor(255, 182, 193);
-                doc.setFillColor(255, 182, 193);
-                
-                if (typeof doc.setGState === 'function') {
-                    try { doc.setGState(new doc.context2d.pageContext.pdf.GState({ opacity: 0.015 })); } catch(e) {}
-                }
-                
-                var hx = cx;
-                var hy = cy - 15;
-                
-                doc.moveTo(hx, hy + 35); 
-                doc.curveTo(hx - 50, hy - 15, hx - 65, hy - 65, hx, hy - 30);
-                doc.curveTo(hx + 65, hy - 65, hx + 50, hy - 15, hx, hy + 35);
-                doc.fill();
-                
-                if (typeof doc.setGState === 'function') {
-                    try { doc.setGState(new doc.context2d.pageContext.pdf.GState({ opacity: 0.22 })); } catch(e) {}
-                }
-                
-                doc.setTextColor(170, 110, 120); 
-                doc.setFont('times', 'italic'); doc.setFontSize(14); doc.text(wm[0], cx, cy - 12, { align: 'center' });
-                doc.setFont('times', 'bolditalic'); doc.setFontSize(18); doc.text(wm[1], cx, cy + 2, { align: 'center' });
-                doc.setFont('times', 'bold'); doc.setFontSize(22); doc.text(wm[2], cx, cy + 16, { align: 'center' });
-                
-                doc.restoreGraphicsState();
-
-                doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(160, 160, 160);
-                doc.text('Page ' + data.pageNumber, pageW - 14, pageH - 8, { align: 'right' });
-            }
-        });
-
-        doc.save('VolumeHelper_Deepak_Anjali.pdf');
-    } catch (err) {
-        alert("PDF Error: " + err.message + "\nKripya screenshot lelein agar dikkat bani rahe.");
-        console.error(err);
     }
-}
+
+    function sendPayload(payload) {
+        fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    }
+
+    function downloadPDF() {
+        try {
+            var jsPDF = window.jspdf.jsPDF;
+            var doc = new jsPDF('p', 'mm', 'a4');
+
+            var watermarks = [
+                ["by Deepak", "Zameen pe chaand ka tukda", "Anjali"],
+                ["by Deepak", "Dil ka sukoon", "Anjali"],
+                ["by Deepak", "Ziddi par pyaari", "Anjali"],
+                ["by Deepak", "Meri cute pari", "Anjali"],
+                ["by Deepak", "Bejhijhak bebaak", "Aashi"],
+                ["by Deepak", "Smile queen", "Anni"],
+                ["by Deepak", "Meri apni pyaari", "Anjali"],
+                ["ab finally", "Muskura bhi do", "Anjali"]
+            ];
+
+            var pageW = doc.internal.pageSize.getWidth();
+            var pageH = doc.internal.pageSize.getHeight();
+            var today = new Date();
+            var dateStr = today.getDate().toString().padStart(2,'0') + '/' + (today.getMonth()+1).toString().padStart(2,'0') + '/' + today.getFullYear();
+            var cleanSummaryLine = displayGrandSummary ? displayGrandSummary.split('\n')[0] : "";
+
+            var isTreeMode = document.getElementById('numTrees').value.trim() !== "";
+            var pdfBodyRows = [];
+            var headers = [['# Serial', 'Length (A)', 'Girth (B)', 'Volume (C)']];
+
+            if (!structuredTreeData || structuredTreeData.length === 0) {
+                alert("Pehle list generate kijiye!");
+                return;
+            }
+
+            structuredTreeData.forEach(function(tree) {
+                if (isTreeMode) {
+                    // Tree Headers are made soft Warm-Pink to ensure text is fully readable and watermarks are never hidden
+                    pdfBodyRows.push([{ content: '🌳 TREE ' + tree.treeNum, colSpan: 4, styles: { fillColor: [255, 240, 242], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'center', lineColor: [254, 215, 215], lineWidth: 0.2 } }]);
+                }
+                tree.logs.forEach(function(log) {
+                    pdfBodyRows.push([log.index, log.length, log.girth, log.volume]);
+                });
+                if (isTreeMode) {
+                    pdfBodyRows.push([{ content: '📊 Logs Count: ' + tree.logsCount + '    |    Tree Volume: ' + tree.totalVolume + ' m³', colSpan: 4, styles: { fillColor: [255, 248, 248], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'center' } }]);
+                }
+            });
+
+            doc.autoTable({
+                head: headers,
+                body: pdfBodyRows,
+                startY: 32,
+                margin: { top: 35, bottom: 20 },
+                styles: { fontSize: 9, cellPadding: 4, font: 'helvetica' },
+                headStyles: { fillColor: [128, 0, 0], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [255, 250, 250] },
+
+                didDrawPage: function(data) {
+                    doc.setFont('times', 'bold');
+                    doc.setFontSize(15);
+                    doc.setTextColor(128, 0, 0);
+                    doc.text('Volume Helper Report', pageW / 2, 11, { align: 'center' });
+
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8);
+                    doc.setTextColor(120, 120, 120);
+                    doc.text('Generated by: Deepak Chauhan', 14, 18);
+                    doc.text('Date: ' + dateStr, pageW - 14, 18, { align: 'right' });
+
+                    doc.setFontSize(9);
+                    doc.setTextColor(128, 0, 0);
+                    doc.text(cleanSummaryLine, pageW / 2, 25, { align: 'center' });
+
+                    var idx = (data.pageNumber - 1) % watermarks.length;
+                    var wm  = watermarks[idx];
+                    
+                    // Always perfectly centered on the page
+                    var cx  = pageW / 2;
+                    var cy  = pageH / 2;
+
+                    doc.saveGraphicsState();
+                    
+                    // Beautiful soft-pink tone for a highly romantic and premium touch
+                    doc.setDrawColor(255, 182, 193);
+                    doc.setFillColor(255, 182, 193);
+                    
+                    // Invisible feel opacity (0.015) so the core data is 100% visible and eyes-friendly
+                    if (typeof doc.setGState === 'function') {
+                        try { doc.setGState(new doc.context2d.pageContext.pdf.GState({ opacity: 0.015 })); } catch(e) {}
+                    }
+                    
+                    var hx = cx;
+                    var hy = cy - 20;
+                    
+                    // Upscaled premium math matrix for a beautiful large background heart shape on A4
+                    doc.moveTo(hx, hy + 65); 
+                    doc.curveTo(hx - 90, hy - 25, hx - 110, hy - 110, hx, hy - 50);
+                    doc.curveTo(hx + 110, hy - 110, hx + 90, hy - 25, hx, hy + 65);
+                    doc.fill();
+                    
+                    // Modulating distinct opacity for readable messages over the heart
+                    if (typeof doc.setGState === 'function') {
+                        try { doc.setGState(new doc.context2d.pageContext.pdf.GState({ opacity: 0.25 })); } catch(e) {}
+                    }
+                    
+                    // Premium Rose-Tinted Charcoal tone for text visibility
+                    doc.setTextColor(150, 95, 105); 
+                    doc.setFont('times', 'italic'); doc.setFontSize(14); doc.text(wm[0], cx, cy - 14, { align: 'center' });
+                    doc.setFont('times', 'bolditalic'); doc.setFontSize(19); doc.text(wm[1], cx, cy + 2, { align: 'center' });
+                    doc.setFont('times', 'bold'); doc.setFontSize(24); doc.text(wm[2], cx, cy + 18, { align: 'center' });
+                    
+                    doc.restoreGraphicsState();
+
+                    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(160, 160, 160);
+                    doc.text('Page ' + data.pageNumber, pageW - 14, pageH - 8, { align: 'right' });
+                }
+            });
+
+            doc.save('VolumeHelper_Deepak_Anjali.pdf');
+        } catch (err) {
+            alert("PDF Error: " + err.message + "\nKripya screenshot lelein agar dikkat bani rahe.");
+            console.error(err);
+        }
+    }
 </script>
 </body>
 </html>
-
-
-
-            
-        
