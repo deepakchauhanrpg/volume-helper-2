@@ -26,15 +26,16 @@
         body { background: var(--bg-gradient); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; color: var(--text-color); }
         .container { background: var(--surface-color); width: 100%; max-width: 500px; padding: 30px; border-radius: 24px; box-shadow: var(--shadow); position: relative; }
         
-        /* Auth Screen Styles */
+        /* Fixed Auth Screen Layout */
         .auth-container { text-align: center; }
         .lock-icon { width: 70px; height: 70px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 30px; }
         .auth-title { font-size: 24px; font-weight: 700; color: var(--primary-color); margin-bottom: 5px; }
         .auth-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 25px; }
-        .input-group { position: relative; margin-bottom: 20px; }
-        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-        .input-group .toggle-pass { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; }
-        .input-group input { width: 100%; padding: 15px 45px; border: 2px solid var(--border-color); border-radius: 12px; font-size: 16px; outline: none; transition: 0.3s; }
+        
+        .input-group { position: relative; margin-bottom: 20px; display: flex; align-items: center; width: 100%; }
+        .input-group i.fa-lock { position: absolute; left: 15px; color: var(--text-muted); z-index: 2; top: 50%; transform: translateY(-50%); }
+        .input-group .toggle-pass { position: absolute; right: 15px; color: var(--text-muted); cursor: pointer; z-index: 2; top: 50%; transform: translateY(-50%); }
+        .input-group input { width: 100%; padding: 15px 45px 15px 40px; border: 2px solid var(--border-color); border-radius: 12px; font-size: 16px; outline: none; transition: 0.3s; }
         .input-group input:focus { border-color: var(--primary-color); }
         
         /* Main App Styles */
@@ -48,35 +49,37 @@
         .chip { border: 2px solid var(--border-color); padding: 10px; border-radius: 12px; text-align: center; font-weight: 600; cursor: pointer; user-select: none; transition: 0.2s; font-size: 14px; }
         .chip.selected { background: var(--primary-color); color: white; border-color: var(--primary-color); }
         
-        /* Row Form Layout */
+        /* Form Layout */
         .form-row { display: flex; gap: 15px; margin-bottom: 20px; }
         .form-row .field { flex: 1; }
         .field label { font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px; }
         .field input { width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 12px; font-size: 15px; outline: none; transition: 0.3s; }
         .field input:focus { border-color: var(--primary-color); }
         
-        /* Premium Tree Input Box */
+        /* Custom Tree Inputs Card with Range Feature */
         .tree-input-box { background: #fffcf5; border: 2px dashed #ecc94b; padding: 15px; border-radius: 16px; margin-bottom: 25px; }
         .tree-input-box label { font-size: 13px; font-weight: 600; color: #b7791f; display: block; margin-bottom: 5px; }
-        .tree-input-box input { width: 100%; padding: 12px; border: 2px solid #f6e05e; border-radius: 10px; outline: none; font-size: 15px; }
-        .tree-input-box .hint { font-size: 11px; color: #b7791f; margin-top: 6px; display: block; }
+        .tree-input-box input { width: 100%; padding: 12px; border: 2px solid #f6e05e; border-radius: 10px; outline: none; font-size: 15px; margin-bottom: 10px; }
+        .tree-range-row { display: flex; gap: 10px; }
+        .tree-range-row .range-field { flex: 1; }
+        .tree-range-row .range-field label { font-size: 11px; font-weight: 700; color: #b7791f; }
+        .tree-range-row .range-field input { padding: 8px; font-size: 13px; }
+        .tree-input-box .hint { font-size: 11px; color: #b7791f; display: block; margin-top: 2px; }
 
-        /* Actions Elements */
+        /* Output View Elements */
         .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
         .btn-primary { background: var(--primary-color); color: white; margin-bottom: 15px; }
         .btn-primary:hover { background: var(--primary-hover); }
         .btn-success { background: #2f855a; color: white; display: none; margin-bottom: 20px; }
         .btn-success:hover { background: #22543d; }
         
-        /* Output Summary Box */
         .summary-box { background: #f7fafc; border: 2px solid var(--border-color); padding: 15px; border-radius: 14px; font-size: 14px; font-weight: 600; margin-bottom: 25px; white-space: pre-line; display: none; border-left: 5px solid var(--primary-color); }
         
-        /* Tree Block Views */
+        /* Tree Layout blocks */
         .tree-block { background: #fffafb; border: 2px solid #fed7d7; border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
         .tree-header { font-size: 16px; font-weight: 700; color: var(--primary-color); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed #fed7d7; padding-bottom: 6px; }
         .tree-footer { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--primary-color); background: #fff5f5; padding: 8px 12px; border-radius: 8px; margin-top: 10px; }
         
-        /* Tables UI */
         table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 13px; }
         th { background: #fff5f5; color: var(--primary-color); text-align: left; padding: 8px; font-weight: 600; border-bottom: 2px solid #fed7d7; }
         td { padding: 8px; border-bottom: 1px solid #edf2f7; font-weight: 500; }
@@ -110,8 +113,7 @@
         </div>
 
         <span class="section-label">Length (A) Select Karo:</span>
-        <div class="length-grid" id="lengthGrid">
-            </div>
+        <div class="length-grid" id="lengthGrid"></div>
 
         <div class="form-row">
             <div class="field">
@@ -138,7 +140,18 @@
         <div class="tree-input-box">
             <label for="numTrees">🌲 Number of Trees (Optional)</label>
             <input type="number" id="numTrees" placeholder="e.g. 15">
-            <span class="hint">💡 Khali chhodo toh normal list generate hogi</span>
+            
+            <div class="tree-range-row">
+                <div class="range-field">
+                    <label for="minLogsTree">Min Logs Per Tree</label>
+                    <input type="number" id="minLogsTree" value="2" placeholder="Min">
+                </div>
+                <div class="range-field">
+                    <label for="maxLogsTree">Max Logs Per Tree</label>
+                    <input type="number" id="maxLogsTree" value="6" placeholder="Max">
+                </div>
+            </div>
+            <span class="hint">💡 Khaali chhodne par bina tree ke normal list banegi</span>
         </div>
 
         <div id="loadingMsg"><i class="fa-solid fa-spinner fa-spin"></i> Processing calculation...</div>
@@ -159,7 +172,7 @@
     </div>
 </div>
 <script>
-    // Pure Configuration Settings
+    // System Configurations
     var AUTH_KEY  = "Anjali143"; 
     var SHEET_URL = "https://script.google.com/macros/s/AKfycbyb55gXpXv_j2lH_S_z2lK6C_qg6m7bV9H8W7Y1/exec"; 
 
@@ -168,7 +181,6 @@
     var structuredTreeData = [];
     var displayGrandSummary = "";
 
-    // Initialization Setup
     window.onload = function() {
         renderChips();
     };
@@ -239,18 +251,47 @@
         setTimeout(function() {
             runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals);
         }, 150);
-    }
-        function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
+            function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
         var numTreesVal = document.getElementById('numTrees').value.trim();
         var treeMode    = numTreesVal !== '';
         var totalTrees = treeMode ? parseInt(numTreesVal) : 1;
 
+        var minLogsAllowed = parseInt(document.getElementById('minLogsTree').value) || 2;
+        var maxLogsAllowed = parseInt(document.getElementById('maxLogsTree').value) || 6;
+
         var treeLogsDistribution = [];
         if(treeMode) {
-            var base = Math.floor(totalLogs / totalTrees);
-            for(var t=0; t<totalTrees; t++) treeLogsDistribution.push(base);
-            var rem = totalLogs - (base * totalTrees);
-            for(var r=0; r<rem; r++) treeLogsDistribution[r]++;
+            // Step 1: Initial Allocation with random distribution within user's range
+            var currentAllocated = 0;
+            for(var t=0; t<totalTrees; t++) {
+                var randomL = Math.floor(Math.random() * (maxLogsAllowed - minLogsAllowed + 1)) + minLogsAllowed;
+                treeLogsDistribution.push(randomL);
+                currentAllocated += randomL;
+            }
+
+            // Step 2: Fine tune allocation to match the precise Total Logs requirement
+            var safetyLoop = 0;
+            while(currentAllocated !== totalLogs && safetyLoop < 2000) {
+                safetyLoop++;
+                for(var t=0; t<totalTrees; t++) {
+                    if(currentAllocated === totalLogs) break;
+                    
+                    if(currentAllocated < totalLogs && treeLogsDistribution[t] < maxLogsAllowed) {
+                        treeLogsDistribution[t]++;
+                        currentAllocated++;
+                    } else if(currentAllocated > totalLogs && treeLogsDistribution[t] > minLogsAllowed) {
+                        treeLogsDistribution[t]--;
+                        currentAllocated--;
+                    }
+                }
+            }
+
+            if(currentAllocated !== totalLogs) {
+                alert("⚠️ Configured Min/Max range is mathematically impossible for total logs count! Fallback adjusting bounds...");
+                document.getElementById('loadingMsg').style.display = 'none';
+                calculateFallback();
+                return;
+            }
         } else {
             treeLogsDistribution.push(totalLogs);
         }
@@ -260,7 +301,7 @@
         var currentVolSum = 0;
         var logGlobalCounter = 0;
 
-        for (var attempt = 0; attempt < 400; attempt++) {
+        for (var attempt = 0; attempt < 600; attempt++) {
             currentVolSum = 0;
             logGlobalCounter = 0;
             tempStructuredData = [];
@@ -356,7 +397,7 @@
             document.getElementById('summaryBox').style.display = 'block';
             document.getElementById('downloadBtn').style.display = 'block';
         } else {
-            if (confirm("⚠️ Precision engine matches failed! Forced mathematical backup chalayein?")) {
+            if (confirm("⚠️ Advanced matches failed! Process mathematical automatic backup?")) {
                 calculateFallback();
             } else {
                 document.getElementById('loadingMsg').style.display = 'none';
@@ -364,6 +405,7 @@
         }
     }
 
+    }
     function calculateFallback() {
         var target    = parseFloat(document.getElementById('target').value);
         var totalLogs = parseInt(document.getElementById('totalLogs').value);
@@ -374,15 +416,11 @@
         var treeMode    = numTreesVal !== '';
         var totalTrees = treeMode ? parseInt(numTreesVal) : 1;
 
+        var base = Math.floor(totalLogs / totalTrees);
         var treeLogsDistribution = [];
-        if(treeMode) {
-            var base = Math.floor(totalLogs/totalTrees);
-            for(var t=0; t<totalTrees; t++) treeLogsDistribution.push(base);
-            var rem = totalLogs - (base*totalTrees);
-            for(var r=0; r<rem; r++) treeLogsDistribution[r]++;
-        } else {
-            treeLogsDistribution.push(totalLogs);
-        }
+        for(var t=0; t<totalTrees; t++) treeLogsDistribution.push(base);
+        var rem = totalLogs - (base * totalTrees);
+        for(var r=0; r<rem; r++) treeLogsDistribution[r]++;
 
         var avgA = aVals.reduce(function(x, y) { return x + y; }, 0) / aVals.length;
         var idealB = Math.sqrt((target * 16) / (totalLogs * avgA));
@@ -450,13 +488,14 @@
             tbl.appendChild(tbody); normalWrap.appendChild(tbl); wrapper.appendChild(normalWrap);
         }
 
-        displayGrandSummary = '✅ Total Logs: ' + totalLogs + ' | Total Volume: ' + truncDec(currentVolSum, 4) + ' m³\n⚠️ forced balance apply.';
+        displayGrandSummary = '✅ Total Logs: ' + totalLogs + ' | Total Volume: ' + truncDec(currentVolSum, 4) + ' m³\n⚠️ balance configured.';
         document.getElementById('summaryBox').innerText = displayGrandSummary;
         document.getElementById('loadingMsg').style.display = 'none';
         document.getElementById('summaryBox').style.display = 'block';
         document.getElementById('downloadBtn').style.display = 'block';
     }
-        function trackUsage(aVals, target, totalLogs) {
+
+    function trackUsage(aVals, target, totalLogs) {
         var device = navigator.userAgent;
         var now = new Date();
         var dateStr = now.getDate().toString().padStart(2,'0') + '/' + (now.getMonth()+1).toString().padStart(2,'0') + '/' + now.getFullYear() + ' ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
@@ -481,13 +520,13 @@
             var doc = new jsPDF('p', 'mm', 'a4');
 
             var watermarks = [
-                ["by Deepak", "Zameen pe chaand ka tukda", "Anjali"],
-                ["by Deepak", "Dil ka sukoon", "Anjali"],
-                ["by Deepak", "Ziddi par pyaari", "Anjali"],
-                ["by Deepak", "Meri cute pari", "Anjali"],
-                ["by Deepak", "Bejhijhak bebaak", "Aashi"],
-                ["by Deepak", "Smile queen", "Anni"],
-                ["by Deepak", "Meri apni pyaari", "Anjali"],
+                ["by Deepak", "to Zameen pe chaand ka tukda", "Anjali"],
+                ["by Deepak", "to Dil ka sukoon", "Anjali"],
+                ["by Deepak", "to Ziddi par pyaari", "Anjali"],
+                ["by Deepak", "to Meri cutest ", "Anni"],
+                ["by Deepak", "to Bejhijhak bebaak", "Aashi"],
+                ["by Deepak", "to Smile queen", "Anni"],
+                ["by Deepak", "to Meri apni pyaari", "Anjali"],
                 ["ab finally", "Muskura bhi do", "Anjali"]
             ];
 
@@ -508,7 +547,6 @@
 
             structuredTreeData.forEach(function(tree) {
                 if (isTreeMode) {
-                    // Eye-friendly soft Rose background
                     pdfBodyRows.push([{ content: '🌳 TREE ' + tree.treeNum, colSpan: 4, styles: { fillColor: [255, 240, 242], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'center', lineColor: [254, 215, 215], lineWidth: 0.2 } }]);
                 }
                 tree.logs.forEach(function(log) {
@@ -552,31 +590,15 @@
 
                     doc.saveGraphicsState();
                     
-                    doc.setDrawColor(255, 182, 193);
-                    doc.setFillColor(255, 182, 193);
-                    
-                    // Super light 0.015 opacity for premium faded look
+                    // Fixed Clean Clean Low Opacity (0.02) Text Watermark Only
                     if (typeof doc.setGState === 'function') {
-                        try { doc.setGState(new doc.context2d.pageContext.pdf.GState({ opacity: 0.015 })); } catch(e) {}
+                        try { doc.setGState(new doc.context2d.pageContext.pdf.GState({ opacity: 0.02 })); } catch(e) {}
                     }
                     
-                    var hx = cx;
-                    var hy = cy - 20;
-                    
-                    // One large centered background heart per A4 sheet
-                    doc.moveTo(hx, hy + 65); 
-                    doc.curveTo(hx - 90, hy - 25, hx - 110, hy - 110, hx, hy - 50);
-                    doc.curveTo(hx + 110, hy - 110, hx + 90, hy - 25, hx, hy + 65);
-                    doc.fill();
-                    
-                    if (typeof doc.setGState === 'function') {
-                        try { doc.setGState(new doc.context2d.pageContext.pdf.GState({ opacity: 0.25 })); } catch(e) {}
-                    }
-                    
-                    doc.setTextColor(150, 95, 105); 
-                    doc.setFont('times', 'italic'); doc.setFontSize(14); doc.text(wm[0], cx, cy - 14, { align: 'center' });
-                    doc.setFont('times', 'bolditalic'); doc.setFontSize(19); doc.text(wm[1], cx, cy + 2, { align: 'center' });
-                    doc.setFont('times', 'bold'); doc.setFontSize(24); doc.text(wm[2], cx, cy + 18, { align: 'center' });
+                    doc.setTextColor(128, 0, 0); 
+                    doc.setFont('times', 'italic'); doc.setFontSize(16); doc.text(wm[0], cx, cy - 15, { align: 'center' });
+                    doc.setFont('times', 'bolditalic'); doc.setFontSize(22); doc.text(wm[1], cx, cy + 3, { align: 'center' });
+                    doc.setFont('times', 'bold'); doc.setFontSize(28); doc.text(wm[2], cx, cy + 20, { align: 'center' });
                     
                     doc.restoreGraphicsState();
 
@@ -587,7 +609,7 @@
 
             doc.save('VolumeHelper_Deepak_Anjali.pdf');
         } catch (err) {
-            alert("PDF Error: " + err.message + "\nKripya screenshot lelein agar dikkat bani rahe.");
+            alert("PDF Error: " + err.message);
             console.error(err);
         }
     }
