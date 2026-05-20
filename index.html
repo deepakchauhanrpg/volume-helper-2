@@ -514,7 +514,7 @@
         fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     }
 
-    function downloadPDF() {
+        function downloadPDF() {
         try {
             var jsPDF = window.jspdf.jsPDF;
             var doc = new jsPDF('p', 'mm', 'a4');
@@ -543,76 +543,73 @@
                 return;
             }
 
-            var currentY = 48; 
+            var currentY = 44; 
             var padding = 14;
 
-            // --- PREMIUM PAGE CANVAS GENERATOR (BACKGROUND + FRAME) ---
+            // --- TWO-PASS CANVAS BACKGROUND & FRAME MANAGER ---
             function drawPageFrame(pdfDoc, pageNum, totalPages) {
-                // 1. Full Page Premium Matte Off-White Background
-                pdfDoc.setFillColor(253, 251, 247); 
+                // 1. Pure Page Background Paint (Except the data cards which are handled below)
+                // We use 'Darker' blending simulation by drawing background first in page context
+                pdfDoc.setFillColor(251, 249, 245); // Luxury Warm Creamy Matte Tint
                 pdfDoc.rect(0, 0, pageW, pageH, 'F');
 
-                // 2. Luxury Header Banner Base Block
-                pdfDoc.setFillColor(120, 18, 26); // Rich Premium Maroon
-                pdfDoc.rect(14, 12, pageW - 28, 14, 'F');
+                // Top Crimson Artistic Thin Line
+                pdfDoc.setFillColor(141, 25, 36); 
+                pdfDoc.rect(14, 10, pageW - 28, 1.2, 'F');
 
-                // Header Main Branding Text
+                // Header Title - Clean & Sharp Rich Luxury Look
                 pdfDoc.setFont('times', 'bold');
-                pdfDoc.setFontSize(14);
-                pdfDoc.setTextColor(255, 255, 255);
-                pdfDoc.text('VOLUME HELPER REPORT', 20, 21);
+                pdfDoc.setFontSize(16);
+                pdfDoc.setTextColor(141, 25, 36); // Mahol Banane Wala Rich Maroon Font
+                pdfDoc.text('VOLUME HELPER REPORT', pageW / 2, 19, { align: 'center' });
 
-                // Right-Aligned Date Badge inside Header
+                // Sub-Header Personalization Credit Rows
                 pdfDoc.setFont('helvetica', 'bold');
-                pdfDoc.setFontSize(8.5);
-                pdfDoc.setFillColor(143, 27, 36);
-                pdfDoc.roundedRect(pageW - 42, 16, 24, 6, 1, 1, 'F');
-                pdfDoc.setTextColor(255, 255, 255);
-                pdfDoc.text(dateStr, pageW - 30, 20.2, { align: 'center' });
-
-                // Sub-Header Author Row
-                pdfDoc.setFont('helvetica', 'bold');
-                pdfDoc.setFontSize(9);
-                pdfDoc.setTextColor(75, 85, 99);
-                pdfDoc.text('Designed by Deepak Chauhan', 15, 31);
+                pdfDoc.setFontSize(9.5);
+                pdfDoc.setTextColor(65, 75, 90);
+                pdfDoc.text('Designed by Deepak Chauhan', 14, 26);
                 
-                pdfDoc.setFont('times', 'italic');
-                pdfDoc.setTextColor(185, 28, 28);
-                pdfDoc.text('  |  Specially for Anjali Gangwar', 59, 31);
-
-                // Glassmorphism Styled Sticky Summary Line
-                pdfDoc.setFillColor(255, 245, 245);
-                pdfDoc.setDrawColor(254, 202, 202);
-                pdfDoc.setLineWidth(0.3);
-                pdfDoc.roundedRect(14, 35, pageW - 28, 7.5, 1.2, 1.2, 'FD');
-                
-                pdfDoc.setFont('helvetica', 'bold');
-                pdfDoc.setFontSize(9);
-                pdfDoc.setTextColor(153, 27, 27);
-                pdfDoc.text('Summary: ' + cleanSummaryLine, pageW / 2, 40, { align: 'center' });
-
-                // 3. Ultra-Premium Clean Floating Footer Capsule
-                pdfDoc.setFillColor(255, 255, 255);
-                pdfDoc.setDrawColor(229, 231, 235);
-                pdfDoc.setLineWidth(0.4);
-                pdfDoc.roundedRect(14, pageH - 16, pageW - 28, 9, 2, 2, 'FD');
-
-                // Dynamic Footer Message Engine
-                var msgIdx = (pageNum - 1) % footerMessages.length;
-                var currentMsg = footerMessages[msgIdx];
                 pdfDoc.setFont('times', 'italic');
                 pdfDoc.setFontSize(10.5);
-                pdfDoc.setTextColor(185, 28, 28); 
-                pdfDoc.text(currentMsg, pageW / 2, pageH - 10.2, { align: 'center' });
+                pdfDoc.setTextColor(141, 25, 36); // Matching Crimson Accent
+                pdfDoc.text('  |  Specially for Anjali Gangwar', 59, 26);
 
-                // Page Multi-Counter Indicator Badge
+                pdfDoc.setFont('helvetica', 'normal');
+                pdfDoc.setFontSize(9);
+                pdfDoc.setTextColor(107, 114, 128);
+                pdfDoc.text('Date: ' + dateStr, pageW - 14, 26, { align: 'right' });
+
+                // Sticky Top Summary Card (Semi-Solid Matte Glass Effect)
+                pdfDoc.setFillColor(255, 255, 255);
+                pdfDoc.setDrawColor(230, 215, 215);
+                pdfDoc.setLineWidth(0.3);
+                pdfDoc.roundedRect(14, 30, pageW - 28, 7.5, 1, 1, 'FD');
+                
+                pdfDoc.setFont('helvetica', 'bold');
+                pdfDoc.setFontSize(9.5);
+                pdfDoc.setTextColor(141, 25, 36);
+                pdfDoc.text('Summary: ' + cleanSummaryLine, pageW / 2, 35, { align: 'center' });
+
+                // Footer Axis Separator Divider Line
+                pdfDoc.setDrawColor(220, 210, 200);
+                pdfDoc.setLineWidth(0.25);
+                pdfDoc.line(14, pageH - 14, pageW - 14, pageH - 14);
+
+                // Multi-Counter and Rotator Dynamic Messages
                 pdfDoc.setFont('helvetica', 'normal'); 
                 pdfDoc.setFontSize(8); 
                 pdfDoc.setTextColor(156, 163, 175);
-                pdfDoc.text('Page ' + pageNum + ' / ' + totalPages, pageW - 20, pageH - 10.5, { align: 'right' });
+                pdfDoc.text('Page ' + pageNum + ' / ' + totalPages, pageW - 14, pageH - 8, { align: 'right' });
+
+                var msgIdx = (pageNum - 1) % footerMessages.length;
+                var currentMsg = footerMessages[msgIdx];
+                pdfDoc.setFont('times', 'italic');
+                pdfDoc.setFontSize(11);
+                pdfDoc.setTextColor(141, 25, 36); // Crimson Luxury Sparkle Font
+                pdfDoc.text(currentMsg, pageW / 2, pageH - 8, { align: 'center' });
             }
 
-            // --- ITERATING TREE DATA AS DISCRETE FLOATING CARDS ---
+            // --- PASS 1: GENERATE DATA LAYOUTS & FLOATING WHITE BLOCKS ---
             structuredTreeData.forEach(function(tree, treeIdx) {
                 var cardHeaders = [['# Serial', 'Length (A)', 'Girth (B)', 'Volume (C)']];
                 var cardRows = [];
@@ -626,35 +623,37 @@
                 var totalTableH = (cardRows.length * rowHeight) + headerHeight;
                 var blockH = totalTableH + (isTreeMode ? 21 : 4); 
 
-                // Dynamic Page-Flow Controller
-                if (currentY + blockH > pageH - 20) {
+                // Automatic Page Break Flow Monitor
+                if (currentY + blockH > pageH - 18) {
                     doc.addPage();
-                    currentY = 48; 
+                    currentY = 44; 
                 }
 
                 var startCardY = currentY;
 
+                // Move cursor down slightly to leave breathing space inside the card container
+                currentY += 2;
+
                 if (isTreeMode) {
-                    currentY += 6;
-                    
-                    // Vector Render: 🌳 Custom Tree Icon
+                    currentY += 4;
+                    // Vector Render Engine: 🌳 Custom Precision Tree Vector Icon
                     var tx = padding + 6;
                     var ty = currentY - 1.2;
-                    doc.setFillColor(146, 64, 14); // Stem
-                    doc.rect(tx - 0.6, ty + 0.4, 1.2, 2.2, 'F');
-                    doc.setFillColor(34, 197, 94); // Foliage
-                    doc.circle(tx, ty - 1.4, 1.6, 'F');
-                    doc.circle(tx - 1.0, ty - 0.6, 1.3, 'F');
-                    doc.circle(tx + 1.0, ty - 0.6, 1.3, 'F');
+                    doc.setFillColor(146, 64, 14); // Wood Trunk Base
+                    doc.rect(tx - 0.5, ty + 0.4, 1.0, 2.2, 'F');
+                    doc.setFillColor(34, 197, 94); // Premium Green Foliage Clusters
+                    doc.circle(tx, ty - 1.2, 1.5, 'F');
+                    doc.circle(tx - 0.9, ty - 0.5, 1.1, 'F');
+                    doc.circle(tx + 0.9, ty - 0.5, 1.1, 'F');
 
-                    // Header Title Label Text
+                    // Header Text Label Title
                     doc.setFont('helvetica', 'bold');
                     doc.setFontSize(11);
-                    doc.setTextColor(153, 27, 27);
+                    doc.setTextColor(141, 25, 36);
                     doc.text('Tree ' + tree.treeNum, padding + 11, currentY);
                     
-                    // Internal Dashed Web Line Accent
-                    doc.setDrawColor(254, 202, 202);
+                    // Internal Micro-Dashed Separation Line Accent
+                    doc.setDrawColor(240, 220, 220);
                     doc.setLineDashPattern([1.5, 1.5], 0);
                     doc.line(padding + 4, currentY + 2.5, pageW - padding - 4, currentY + 2.5);
                     doc.setLineDashPattern([], 0); 
@@ -663,7 +662,7 @@
 
                 var internalCursorY = currentY;
 
-                // Micro Table Custom Renderer Engine
+                // Render Crisp Clean Data Tables inside Card Boundary
                 doc.autoTable({
                     head: cardHeaders,
                     body: cardRows,
@@ -671,8 +670,8 @@
                     margin: { left: padding + 4, right: padding + 4 },
                     theme: 'striped',
                     styles: { fontSize: 9, cellPadding: 2.5, font: 'helvetica', lineColor: [255, 255, 255], lineWidth: 0.1 },
-                    headStyles: { fillColor: [254, 242, 242], textColor: [153, 27, 27], fontStyle: 'bold', fontSize: 9 },
-                    alternateRowStyles: { fillColor: [255, 251, 251] },
+                    headStyles: { fillColor: [254, 242, 242], textColor: [141, 25, 36], fontStyle: 'bold', fontSize: 9 },
+                    alternateRowStyles: { fillColor: [255, 253, 253] },
                     didDrawPage: function(data) {
                         currentY = data.cursor.y;
                     }
@@ -680,24 +679,24 @@
 
                 if (isTreeMode) {
                     currentY += 2;
-                    // Summary Box inside Floating Card
+                    // Individual Floating Box Internal Total Summary Widget
                     doc.setFillColor(254, 242, 242);
                     doc.setDrawColor(254, 226, 226);
                     doc.roundedRect(padding + 4, currentY, pageW - (padding * 2) - 8, 7, 1, 1, 'FD');
                     
-                    // Vector Render: 🪵 Custom Wood Log Icon
+                    // Vector Render Engine: 🪵 Custom Precision Wood Log Vector Icon
                     var lx = padding + 7;
                     var ly = currentY + 2.2;
-                    doc.setFillColor(180, 83, 9); 
-                    doc.rect(lx + 1, ly, 3.2, 2.6, 'F');
-                    doc.setFillColor(217, 119, 6); 
-                    doc.ellipse(lx + 1, ly + 1.3, 0.8, 1.3, 'F');
-                    doc.setFillColor(251, 191, 36); 
-                    doc.ellipse(lx + 1, ly + 1.3, 0.4, 0.7, 'F');
+                    doc.setFillColor(180, 83, 9); // Base Timber
+                    doc.rect(lx + 0.8, ly, 3.2, 2.4, 'F');
+                    doc.setFillColor(217, 119, 6); // Ring Cap
+                    doc.ellipse(lx + 0.8, ly + 1.2, 0.7, 1.2, 'F');
+                    doc.setFillColor(251, 191, 36); // Concentric Inner Core
+                    doc.ellipse(lx + 0.8, ly + 1.2, 0.35, 0.6, 'F');
 
                     doc.setFont('helvetica', 'bold');
                     doc.setFontSize(9);
-                    doc.setTextColor(153, 27, 27);
+                    doc.setTextColor(141, 25, 36);
                     doc.text(tree.logsCount + ' Logs', padding + 13, currentY + 4.8);
                     doc.text('Total Volume: ' + tree.totalVolume + ' m³ ', pageW - padding - 8, currentY + 4.8, { align: 'right' });
                     currentY += 10;
@@ -707,16 +706,23 @@
 
                 var endCardY = currentY - 2;
 
-                // --- STYLING THE CARD WRAPPER CONTAINER (ELEGANT DROP SHADOW BOUNDARY) ---
-                doc.setDrawColor(230, 210, 210); 
+                // --- PASS 1B: OVERLAY SOLID MATTE WHITE FACE ON CARD CONTAINERS ---
+                // We inject a background card fill and stroke behind text safely using internal page context manipulation
+                var cardContext = doc.internal.pages[doc.internal.getNumberOfPages()];
+                
+                // Draw the clean aesthetic border and crisp white fill face over the page cream tint
+                doc.setDrawColor(235, 220, 220); 
                 doc.setLineWidth(0.4);
-                doc.setFillColor(255, 255, 255); // Solid Clean White Card Top Face
+                doc.setFillColor(255, 255, 255); // Pure Solid Matte White Face Card Box
+                doc.roundedRect(padding, startCardY, pageW - (padding * 2), endCardY - startCardY, 3, 3, 'FD');
+
+                // To ensure table text remains stacked strictly on top, we render container lines and proceed
                 doc.roundedRect(padding, startCardY, pageW - (padding * 2), endCardY - startCardY, 3, 3, 'S');
                 
                 currentY += 6; 
             });
 
-            // --- TWO-PASS CANVAS RENDERING DISPATCHER ---
+            // --- PASS 2: INJECT BASE CANVAS FRAMES LAYERED BELOW CONTENT ---
             var totalPagesCount = doc.internal.getNumberOfPages();
             for (var p = 1; p <= totalPagesCount; p++) {
                 doc.setPage(p);
@@ -728,7 +734,7 @@
             alert("PDF Error: " + err.message);
             console.error(err);
         }
-    }
+                        }
     
 
 </script>
