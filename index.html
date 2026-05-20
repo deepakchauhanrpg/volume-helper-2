@@ -514,19 +514,19 @@
         fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     }
 
-        function downloadPDF() {
+            function downloadPDF() {
         try {
             var jsPDF = window.jspdf.jsPDF;
             var doc = new jsPDF('p', 'mm', 'a4');
 
             var footerMessages = [
-                "by Deepak  |  Zameen pe chaand ka tukda  |  Anjali",
-                "by Deepak  |  Dil ka sukoon  |  Anjali",
-                "by Deepak  |  Ziddi par pyaari  |  Anjali",
-                "by Deepak  |  Meri cute pari  |  Anjali",
-                "by Deepak  |  Bejhijhak bebaak  |  Aashi",
-                "by Deepak  |  Smile queen  |  Anni",
-                "by Deepak  |  Meri apni pyaari  |  Anjali",
+                "by Deepak  |  to Zamee pe chaand ka tukda  |  Anjali",
+                "by Deepak  |  to Dil ka sukoon  |  Anjali",
+                "by Deepak  |  to Ziddi par pyaari  |  Anjali",
+                "by Deepak  |  to Meri apni cute |  Anni",
+                "by Deepak  | to Bejhijhak bebaak  |  Aashi",
+                "by Deepak  |  to Smile queen  |  Anni",
+                "by Deepak  |  to the one and only..  |  Anjjaliii",
                 "ab finally  |  Muskura bhi do  |  Anjali"
             ];
 
@@ -538,6 +538,8 @@
 
             var isTreeMode = document.getElementById('numTrees').value.trim() !== "";
             var pdfBodyRows = [];
+            
+            // Core standard table configuration (Jaise normal list ka structure hota hai)
             var headers = [['# Serial', 'Length (A)', 'Girth (B)', 'Volume (C)']];
 
             if (!structuredTreeData || structuredTreeData.length === 0) {
@@ -545,14 +547,14 @@
                 return;
             }
 
-            // High-End Table Structure Compilation
+            // Normal Flow compiled exactly like the clean screen data
             structuredTreeData.forEach(function(tree) {
                 if (isTreeMode) {
                     pdfBodyRows.push([
                         { 
-                            content: '   TREES DETAILS: TREE NO. ' + tree.treeNum, 
+                            content: 'Tree ' + tree.treeNum, 
                             colSpan: 4, 
-                            styles: { fillColor: [255, 240, 242], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'left', font: 'courier' } 
+                            styles: { fillColor: [255, 244, 244], textColor: [150, 0, 0], fontStyle: 'bold', halign: 'left', fontSize: 10 } 
                         }
                     ]);
                 }
@@ -562,73 +564,97 @@
                 if (isTreeMode) {
                     pdfBodyRows.push([
                         { 
-                            content: '   LOGS COUNT: ' + tree.logsCount + '     |     TOTAL TREE VOLUME: ' + tree.totalVolume + ' m³', 
+                            content: 'Logs Count: ' + tree.logsCount + '   |   Total Tree Volume: ' + tree.totalVolume + ' m³', 
                             colSpan: 4, 
-                            styles: { fillColor: [255, 245, 245], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'right', font: 'helvetica' } 
+                            styles: { fillColor: [255, 248, 248], textColor: [45, 55, 72], fontStyle: 'bold', halign: 'right', fontSize: 9 } 
                         }
                     ]);
                 }
             });
 
+            // Standard clean data body table execution
             doc.autoTable({
                 head: headers,
                 body: pdfBodyRows,
-                startY: 38,
-                margin: { top: 40, bottom: 24, left: 14, right: 14 },
-                styles: { fontSize: 9, cellPadding: 4, font: 'helvetica', lineColor: [254, 226, 226], lineWidth: 0.2 },
-                headStyles: { fillColor: [128, 0, 0], textColor: 255, fontStyle: 'bold', fontSize: 10 },
+                startY: 42,
+                margin: { top: 44, bottom: 26, left: 14, right: 14 },
+                styles: { fontSize: 9, cellPadding: 3.5, font: 'helvetica', lineColor: [241, 245, 249], lineWidth: 0.1 },
+                headStyles: { fillColor: [150, 0, 0], textColor: 255, fontStyle: 'bold', fontSize: 9.5 },
                 alternateRowStyles: { fillColor: [255, 253, 253] },
 
                 didDrawPage: function(data) {
-                    // 1. Top Decorative Premium Border Accent
-                    doc.setFillColor(128, 0, 0);
-                    doc.rect(14, 10, pageW - 28, 1.5, 'F');
+                    // ----------------------------------------------------
+                    // 1. DYNAMIC SHINING GOLDEN HEADER BAND (100 Taka Premium)
+                    // ----------------------------------------------------
+                    // Luxurious Premium Dark Gold base plate
+                    doc.setFillColor(197, 160, 89); 
+                    doc.rect(14, 10, pageW - 28, 22, 'F');
+                    
+                    // Metallic Shine Highlight Strip Inner Border
+                    doc.setFillColor(232, 211, 162); 
+                    doc.rect(14, 30.5, pageW - 28, 1.5, 'F');
 
-                    // 2. Main High-End Title Block
+                    // Header Text - Bold Royal White Branding
                     doc.setFont('times', 'bold');
-                    doc.setFontSize(18);
-                    doc.setTextColor(128, 0, 0);
-                    doc.text('VOLUME HELPER REPORT', pageW / 2, 19, { align: 'center' });
+                    doc.setFontSize(16);
+                    doc.setTextColor(255, 255, 255);
+                    doc.text('VOLUME HELPER REPORT', pageW / 2, 17, { align: 'center' });
 
-                    // 3. Specially Crafted Sub-Header Credits (No Buggy Icon, Text Only Formatted Style)
+                    // Credits Inside Golden Header Band
                     doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(9.5);
-                    doc.setTextColor(45, 55, 72);
-                    doc.text('Designed by Deepak Chauhan', 14, 26);
+                    doc.setFontSize(9);
+                    doc.setTextColor(255, 255, 255);
+                    doc.text('Designed by Deepak Chauhan', 18, 25);
                     
                     doc.setFont('times', 'italic');
-                    doc.setTextColor(180, 50, 50);
-                    doc.text('  |  Specially for Anjali Gangwar', 58, 26);
+                    doc.setTextColor(255, 240, 210); // Soft warm creamy white for Anjali text
+                    doc.text('  |  Specially for Anjali Gangwar', 60, 25);
 
+                    // Date stamp synced beautifully
                     doc.setFont('helvetica', 'normal');
-                    doc.setTextColor(113, 128, 150);
-                    doc.text('Date: ' + dateStr, pageW - 14, 26, { align: 'right' });
+                    doc.setFontSize(8.5);
+                    doc.setTextColor(255, 255, 255);
+                    doc.text('Date: ' + dateStr, pageW - 18, 25, { align: 'right' });
 
-                    // 4. Clean Performance Metrics Tracker
+
+                    // ----------------------------------------------------
+                    // 2. SUMMARY FLOATER STRIP (Just under the header)
+                    // ----------------------------------------------------
                     doc.setFillColor(248, 250, 252);
-                    doc.setDrawColor(226, 232, 240);
-                    doc.roundedRect(14, 29, pageW - 28, 7, 2, 2, 'FD');
+                    doc.setDrawColor(212, 175, 55); // Rich Golden Outline Accent
+                    doc.setLineWidth(0.3);
+                    doc.roundedRect(14, 34, pageW - 28, 6.5, 1, 1, 'FD');
                     
                     doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(9.5);
-                    doc.setTextColor(128, 0, 0);
-                    doc.text(cleanSummaryLine, pageW / 2, 34, { align: 'center' });
+                    doc.setFontSize(9);
+                    doc.setTextColor(150, 0, 0);
+                    doc.text(cleanSummaryLine, pageW / 2, 38.5, { align: 'center' });
 
-                    // 5. Dynamic Romantic Bottom Footer Navigation
-                    doc.setDrawColor(241, 245, 249);
-                    doc.line(14, pageH - 12, pageW - 14, pageH - 12);
 
-                    doc.setFont('helvetica', 'normal'); 
+                    // ----------------------------------------------------
+                    // 3. DYNAMIC SHINING GOLDEN FOOTER BAND
+                    // ----------------------------------------------------
+                    // Footer Metallic Plate
+                    doc.setFillColor(197, 160, 89);
+                    doc.rect(14, pageH - 16, pageW - 28, 10, 'F');
+                    
+                    // Top gold shine edge
+                    doc.setFillColor(232, 211, 162);
+                    doc.rect(14, pageH - 16.8, pageW - 28, 0.8, 'F');
+
+                    // Page counter elegantly pushed inside the plate
+                    doc.setFont('helvetica', 'bold'); 
                     doc.setFontSize(8); 
-                    doc.setTextColor(160, 160, 160);
-                    doc.text('Page ' + data.pageNumber, pageW - 14, pageH - 6, { align: 'right' });
+                    doc.setTextColor(255, 255, 255);
+                    doc.text('Page ' + data.pageNumber, pageW - 18, pageH - 10, { align: 'right' });
 
+                    // Golden Cute Dynamic Romantic Message Rotator
                     var msgIdx = (data.pageNumber - 1) % footerMessages.length;
                     var currentMsg = footerMessages[msgIdx];
                     doc.setFont('times', 'italic');
-                    doc.setFontSize(10);
-                    doc.setTextColor(180, 80, 80); 
-                    doc.text(currentMsg, pageW / 2, pageH - 6, { align: 'center' });
+                    doc.setFontSize(10.5);
+                    doc.setTextColor(255, 255, 255); // Solid readable premium white text over gold plate
+                    doc.text(currentMsg, pageW / 2, pageH - 10, { align: 'center' });
                 }
             });
 
@@ -637,7 +663,8 @@
             alert("PDF Error: " + err.message);
             console.error(err);
         }
-        } 
+    }
+
                     
 </script>
 </body>
