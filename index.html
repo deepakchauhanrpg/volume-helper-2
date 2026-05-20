@@ -263,7 +263,7 @@
     }
 
       
-            function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
+    function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
     var numTreesVal    = document.getElementById('numTrees').value.trim();
     var treeMode       = numTreesVal !== '';
     var totalTrees     = treeMode ? parseInt(numTreesVal) : 1;
@@ -280,17 +280,12 @@
         }
     }
 
-    // Phase 1: Pure Natural & Random Tree Logs Distribution
+    // Phase 1: Pure Natural & Random Tree Logs Distribution (Varying logs count per tree)
     var treeLogsDistribution = [];
     if (treeMode) {
-        // Shuruat mein sabko minimum logs de do
-        for (var t = 0; t < totalTrees; t++) {
-            treeLogsDistribution.push(minLogsAllowed);
-        }
+        for (var t = 0; t < totalTrees; t++) treeLogsDistribution.push(minLogsAllowed);
         var allocated = totalTrees * minLogsAllowed;
         var attempts = 0;
-        
-        // Pure Randomly logs ko trees mein banto taaki pattern na dikhe
         while (allocated < totalLogs && attempts < 10000) {
             var randomTreeIdx = Math.floor(Math.random() * totalTrees);
             if (treeLogsDistribution[randomTreeIdx] < maxLogsAllowed) {
@@ -299,8 +294,6 @@
             }
             attempts++;
         }
-        
-        // Force fully remaining back-fit if random missed any
         if (allocated < totalLogs) {
             for (var t = 0; t < totalTrees && allocated < totalLogs; t++) {
                 while (treeLogsDistribution[t] < maxLogsAllowed && allocated < totalLogs) {
@@ -313,30 +306,50 @@
         treeLogsDistribution.push(totalLogs);
     }
 
-    // Phase 2: Create Natural Baseline with Smooth Math
-    var avgA = aVals.reduce(function(a, b) { return a + b; }, 0) / aVals.length;
-    var idealB = Math.sqrt((target * 16) / (totalLogs * avgA));
-    if (idealB < minG) idealB = minG;
-    if (idealB > maxG) idealB = maxG;
-
+    // Phase 2: Create Custom Timber Market Realistic Distribution Curve
     var tempLogs = [];
     var currentVolSum = 0;
 
     for (var i = 1; i <= totalLogs; i++) {
         var a = aVals[Math.floor(Math.random() * aVals.length)];
-        // Natural variation har ek log par alag-alag
-        var variation = (Math.random() - 0.5) * 0.16; 
-        var finalB = idealB + variation;
+        var finalB = minG;
+        var roll = Math.random();
+
+        // 1. CHHOTE NAGS RULE: 0.95, 1.25, 1.55 length wale patle maal honge
+        if (a <= 1.55) {
+            if (roll < 0.75) {
+                // 70-80% under 0.70 girth
+                finalB = minG + Math.random() * (0.70 - minG);
+            } else if (roll < 0.93) {
+                // Kuch randomly 1.5 tak
+                finalB = 0.70 + Math.random() * (1.50 - 0.70);
+            } else {
+                // Aur kuch 2.0 tak khichenge
+                finalB = 1.50 + Math.random() * (maxG - 1.50);
+            }
+        } 
+        // 2. BADE NAGS RULE: 1.85, 2.15, 2.45 etc. full range wild distribution
+        else {
+            if (roll < 0.45) {
+                // 40-50% under 0.9 girth (as requested)
+                finalB = minG + Math.random() * (0.90 - minG);
+            } else {
+                // Baaki ka sara maal 0.90 se maximum limit (jaise 2.0) ke beech wild swing karega
+                finalB = 0.90 + Math.random() * (maxG - 0.90);
+            }
+        }
+
+        // Extreme bounds protection
         if (finalB < minG) finalB = minG;
         if (finalB > maxG) finalB = maxG;
         finalB = parseFloat(finalB.toFixed(2));
-        
+
         var volC = truncDec((a * Math.pow(finalB, 2)) / 16, 4);
         currentVolSum += parseFloat(volC);
         tempLogs.push({ index: i, length: a, girth: finalB, volume: parseFloat(volC) });
     }
 
-    // Phase 3: Global Smart Adjustments (Purely spread out across the whole list)
+    // Phase 3: Global Volume Balance Engine without Breaking the Realism
     var difference = target - currentVolSum;
     var perLogAdjustment = difference / totalLogs;
 
@@ -344,35 +357,39 @@
         var log = tempLogs[k];
         var newVol = log.volume + perLogAdjustment;
         if (newVol < 0.0001) newVol = 0.0001;
-        
+
         var computedB = Math.sqrt((newVol * 16) / log.length);
+        
+        // Strict boundary validation during adjustment
         if (computedB < minG) computedB = minG;
         if (computedB > maxG) computedB = maxG;
-        
+
         log.girth = parseFloat(computedB.toFixed(2));
         log.volume = parseFloat(truncDec((log.length * Math.pow(log.girth, 2)) / 16, 4));
     }
 
-    // Absolute Micro Fine-Tuning for decimals on last 5 logs
+    // Absolute micro adjustments on final logs for decimal perfect target matching
     currentVolSum = 0;
     tempLogs.forEach(function(l) { currentVolSum += l.volume; });
     var microDiff = target - currentVolSum;
-    
+
     if (Math.abs(microDiff) > 0) {
-        var microAdjustCount = Math.min(5, totalLogs);
+        var microAdjustCount = Math.min(10, totalLogs);
         var microPerLog = microDiff / microAdjustCount;
         for (var m = totalLogs - microAdjustCount; m < totalLogs; m++) {
             var lLog = tempLogs[m];
             var fVol = lLog.volume + microPerLog;
-            var fB = Math.sqrt((fVol * 16) / lLog.length);
-            if (fB >= minG && fB <= maxG) {
-                lLog.volume = parseFloat(truncDec(fVol, 4));
-                lLog.girth = parseFloat(fB.toFixed(2));
+            if (fVol > 0) {
+                var fB = Math.sqrt((fVol * 16) / lLog.length);
+                if (fB >= minG && fB <= maxG) {
+                    lLog.volume = parseFloat(truncDec(fVol, 4));
+                    lLog.girth = parseFloat(fB.toFixed(2));
+                }
             }
         }
     }
 
-    // Re-verify accurate final sum
+    // Re-verify exact sum
     currentVolSum = 0;
     tempLogs.forEach(function(l) { currentVolSum += l.volume; });
 
@@ -469,7 +486,8 @@ function renderTable(treeMode, totalTrees) {
     sumBox.innerText = displayGrandSummary;
     sumBox.style.display = 'block';
     document.getElementById('downloadBtn').style.display = 'block';
-}
+             }
+    
     
     
     function trackUsage(aVals, target, totalLogs) {
