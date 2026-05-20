@@ -262,7 +262,8 @@
         }, 150);
     }
 
-      function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
+      
+            function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
     var numTreesVal    = document.getElementById('numTrees').value.trim();
     var treeMode       = numTreesVal !== '';
     var totalTrees     = treeMode ? parseInt(numTreesVal) : 1;
@@ -279,21 +280,40 @@
         }
     }
 
+    // Phase 1: Pure Natural & Random Tree Logs Distribution
     var treeLogsDistribution = [];
     if (treeMode) {
-        for (var t = 0; t < totalTrees; t++) treeLogsDistribution.push(minLogsAllowed);
-        var remaining = totalLogs - (totalTrees * minLogsAllowed);
-        for (var t = 0; t < totalTrees && remaining > 0; t++) {
-            var canAdd = maxLogsAllowed - treeLogsDistribution[t];
-            var add = Math.min(canAdd, remaining);
-            treeLogsDistribution[t] += add;
-            remaining -= add;
+        // Shuruat mein sabko minimum logs de do
+        for (var t = 0; t < totalTrees; t++) {
+            treeLogsDistribution.push(minLogsAllowed);
+        }
+        var allocated = totalTrees * minLogsAllowed;
+        var attempts = 0;
+        
+        // Pure Randomly logs ko trees mein banto taaki pattern na dikhe
+        while (allocated < totalLogs && attempts < 10000) {
+            var randomTreeIdx = Math.floor(Math.random() * totalTrees);
+            if (treeLogsDistribution[randomTreeIdx] < maxLogsAllowed) {
+                treeLogsDistribution[randomTreeIdx]++;
+                allocated++;
+            }
+            attempts++;
+        }
+        
+        // Force fully remaining back-fit if random missed any
+        if (allocated < totalLogs) {
+            for (var t = 0; t < totalTrees && allocated < totalLogs; t++) {
+                while (treeLogsDistribution[t] < maxLogsAllowed && allocated < totalLogs) {
+                    treeLogsDistribution[t]++;
+                    allocated++;
+                }
+            }
         }
     } else {
         treeLogsDistribution.push(totalLogs);
     }
 
-    // INSTANT ENGINE: Base calculation
+    // Phase 2: Create Natural Baseline with Smooth Math
     var avgA = aVals.reduce(function(a, b) { return a + b; }, 0) / aVals.length;
     var idealB = Math.sqrt((target * 16) / (totalLogs * avgA));
     if (idealB < minG) idealB = minG;
@@ -302,10 +322,10 @@
     var tempLogs = [];
     var currentVolSum = 0;
 
-    // Phase 1: Baseline setup
     for (var i = 1; i <= totalLogs; i++) {
         var a = aVals[Math.floor(Math.random() * aVals.length)];
-        var variation = (Math.random() - 0.5) * 0.12; 
+        // Natural variation har ek log par alag-alag
+        var variation = (Math.random() - 0.5) * 0.16; 
         var finalB = idealB + variation;
         if (finalB < minG) finalB = minG;
         if (finalB > maxG) finalB = maxG;
@@ -316,18 +336,16 @@
         tempLogs.push({ index: i, length: a, girth: finalB, volume: parseFloat(volC) });
     }
 
-    // Phase 2: Smooth adjustment over last 30 logs (Strictly constrained)
+    // Phase 3: Global Smart Adjustments (Purely spread out across the whole list)
     var difference = target - currentVolSum;
-    var adjustCount = Math.min(30, totalLogs); 
-    var perLogAdjustment = difference / adjustCount;
+    var perLogAdjustment = difference / totalLogs;
 
-    for (var k = totalLogs - adjustCount; k < totalLogs; k++) {
+    for (var k = 0; k < totalLogs; k++) {
         var log = tempLogs[k];
         var newVol = log.volume + perLogAdjustment;
         if (newVol < 0.0001) newVol = 0.0001;
         
         var computedB = Math.sqrt((newVol * 16) / log.length);
-        
         if (computedB < minG) computedB = minG;
         if (computedB > maxG) computedB = maxG;
         
@@ -335,26 +353,30 @@
         log.volume = parseFloat(truncDec((log.length * Math.pow(log.girth, 2)) / 16, 4));
     }
 
-    // Phase 3: Final micro calibrations
+    // Absolute Micro Fine-Tuning for decimals on last 5 logs
     currentVolSum = 0;
     tempLogs.forEach(function(l) { currentVolSum += l.volume; });
     var microDiff = target - currentVolSum;
     
     if (Math.abs(microDiff) > 0) {
-        var lastLog = tempLogs[totalLogs - 1];
-        var finalVol = lastLog.volume + microDiff;
-        if (finalVol > 0) {
-            var finalB = Math.sqrt((finalVol * 16) / lastLog.length);
-            if (finalB >= minG && finalB <= maxG) {
-                lastLog.volume = parseFloat(truncDec(finalVol, 4));
-                lastLog.girth = parseFloat(finalB.toFixed(2));
+        var microAdjustCount = Math.min(5, totalLogs);
+        var microPerLog = microDiff / microAdjustCount;
+        for (var m = totalLogs - microAdjustCount; m < totalLogs; m++) {
+            var lLog = tempLogs[m];
+            var fVol = lLog.volume + microPerLog;
+            var fB = Math.sqrt((fVol * 16) / lLog.length);
+            if (fB >= minG && fB <= maxG) {
+                lLog.volume = parseFloat(truncDec(fVol, 4));
+                lLog.girth = parseFloat(fB.toFixed(2));
             }
         }
     }
 
+    // Re-verify accurate final sum
     currentVolSum = 0;
     tempLogs.forEach(function(l) { currentVolSum += l.volume; });
-    // Phase 4: Structural tree packaging
+
+    // Phase 4: Structural Tree Packaging
     structuredTreeData = [];
     var logIdx = 0;
 
@@ -448,6 +470,7 @@ function renderTable(treeMode, totalTrees) {
     sumBox.style.display = 'block';
     document.getElementById('downloadBtn').style.display = 'block';
 }
+    
     
     function trackUsage(aVals, target, totalLogs) {
         var device = navigator.userAgent;
