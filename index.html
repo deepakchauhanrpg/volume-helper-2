@@ -261,180 +261,194 @@
             runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals);
         }, 150);
     }
-    function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
+
+      function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
     var numTreesVal    = document.getElementById('numTrees').value.trim();
     var treeMode       = numTreesVal !== '';
     var totalTrees     = treeMode ? parseInt(numTreesVal) : 1;
     var minLogsAllowed = parseInt(document.getElementById('minLogsTree').value) || 2;
     var maxLogsAllowed = parseInt(document.getElementById('maxLogsTree').value) || 6;
 
-    // --- FIX 1: Smart Tree Math Validation Check (Anjali ke liye instant crash protection) ---
     if (treeMode) {
         var minPossibleLogs = totalTrees * minLogsAllowed;
         var maxPossibleLogs = totalTrees * maxLogsAllowed;
-
         if (totalLogs < minPossibleLogs || totalLogs > maxPossibleLogs) {
             document.getElementById('loadingMsg').style.display = 'none';
-            alert("❌ Calculation Impossible! " + totalLogs + " logs in " + totalTrees + " trees fit nahi ho sakte.\n\n" +
-                  "📊 Is config ke hisab se:\n" +
-                  "• Min Logs: " + minPossibleLogs + "\n" +
-                  "• Max Logs: " + maxPossibleLogs + "\n\n" +
-                  "💡 Solution: Total Logs badlao ya Per Tree Range adjust karo!");
+            alert("❌ Impossible! " + totalLogs + " logs " + totalTrees + " trees mein fit nahi ho sakte.\nRange: " + minPossibleLogs + " se " + maxPossibleLogs);
             return;
         }
     }
 
     var treeLogsDistribution = [];
-
     if (treeMode) {
         for (var t = 0; t < totalTrees; t++) treeLogsDistribution.push(minLogsAllowed);
-        var allocated = totalTrees * minLogsAllowed;
-
-        var remaining = totalLogs - allocated;
+        var remaining = totalLogs - (totalTrees * minLogsAllowed);
         for (var t = 0; t < totalTrees && remaining > 0; t++) {
             var canAdd = maxLogsAllowed - treeLogsDistribution[t];
-            var add    = Math.min(canAdd, Math.floor(Math.random() * (canAdd + 1)), remaining);
+            var add = Math.min(canAdd, remaining);
             treeLogsDistribution[t] += add;
             remaining -= add;
-        }
-        for (var t = 0; t < totalTrees && remaining > 0; t++) {
-            var canAdd = maxLogsAllowed - treeLogsDistribution[t];
-            if (canAdd > 0) {
-                var add = Math.min(canAdd, remaining);
-                treeLogsDistribution[t] += add;
-                remaining -= add;
-            }
-        }
-        for (var i = treeLogsDistribution.length - 1; i > 0; i--) {
-            var j   = Math.floor(Math.random() * (i + 1));
-            var tmp = treeLogsDistribution[i];
-            treeLogsDistribution[i] = treeLogsDistribution[j];
-            treeLogsDistribution[j] = tmp;
         }
     } else {
         treeLogsDistribution.push(totalLogs);
     }
 
-    var processingSuccess  = false;
-    var tempStructuredData = [];
-    var currentVolSum      = 0;
-    var logGlobalCounter   = 0;
+    // INSTANT ENGINE: Base calculation
+    var avgA = aVals.reduce(function(a, b) { return a + b; }, 0) / aVals.length;
+    var idealB = Math.sqrt((target * 16) / (totalLogs * avgA));
+    if (idealB < minG) idealB = minG;
+    if (idealB > maxG) idealB = maxG;
 
-    // --- FIX 2: Max 400 attempts cap (Browser hamesha smooth chalega, freeze nahi hoga) ---
-    for (var attempt = 0; attempt < 400; attempt++) {
-        currentVolSum      = 0;
-        logGlobalCounter   = 0;
-        tempStructuredData = [];
-        var isValid        = true;
+    var tempLogs = [];
+    var currentVolSum = 0;
 
-        for (var t = 0; t < totalTrees; t++) {
-            var treeLogLimit  = treeLogsDistribution[t];
-            var treeLogsArray = [];
-            var treeVolSum    = 0;
+    // Phase 1: Baseline setup
+    for (var i = 1; i <= totalLogs; i++) {
+        var a = aVals[Math.floor(Math.random() * aVals.length)];
+        var variation = (Math.random() - 0.5) * 0.12; 
+        var finalB = idealB + variation;
+        if (finalB < minG) finalB = minG;
+        if (finalB > maxG) finalB = maxG;
+        finalB = parseFloat(finalB.toFixed(2));
+        
+        var volC = truncDec((a * Math.pow(finalB, 2)) / 16, 4);
+        currentVolSum += parseFloat(volC);
+        tempLogs.push({ index: i, length: a, girth: finalB, volume: parseFloat(volC) });
+    }
 
-            for (var l = 0; l < treeLogLimit; l++) {
-                logGlobalCounter++;
-                var randomA  = aVals[Math.floor(Math.random() * aVals.length)];
-                var remLogs  = totalLogs - logGlobalCounter;
-                var remVol   = target - currentVolSum;
+    // Phase 2: Smooth adjustment over last 30 logs (Strictly constrained)
+    var difference = target - currentVolSum;
+    var adjustCount = Math.min(30, totalLogs); 
+    var perLogAdjustment = difference / adjustCount;
 
-                var minPossibleB = minG, maxPossibleB = maxG;
-                if (remLogs > 0) {
-                    var avgFutureA  = aVals.reduce(function(a,b){return a+b;},0) / aVals.length;
-                    var neededAvgB  = Math.sqrt((remVol * 16) / (remLogs * avgFutureA));
-                    minPossibleB    = Math.max(minG, neededAvgB - 0.25);
-                    maxPossibleB    = Math.min(maxG, neededAvgB + 0.25);
-                    if (minPossibleB > maxPossibleB) { minPossibleB = minG; maxPossibleB = maxG; }
-                }
+    for (var k = totalLogs - adjustCount; k < totalLogs; k++) {
+        var log = tempLogs[k];
+        var newVol = log.volume + perLogAdjustment;
+        if (newVol < 0.0001) newVol = 0.0001;
+        
+        var computedB = Math.sqrt((newVol * 16) / log.length);
+        
+        if (computedB < minG) computedB = minG;
+        if (computedB > maxG) computedB = maxG;
+        
+        log.girth = parseFloat(computedB.toFixed(2));
+        log.volume = parseFloat(truncDec((log.length * Math.pow(log.girth, 2)) / 16, 4));
+    }
 
-                var randomB = Math.random() * (maxPossibleB - minPossibleB) + minPossibleB;
-                randomB     = parseFloat(randomB.toFixed(2));
-                var calcC   = truncDec((randomA * Math.pow(randomB, 2)) / 16, 4);
-
-                if (logGlobalCounter === totalLogs) {
-                    var finalNeededC = target - currentVolSum;
-                    if (finalNeededC < 0.0005) { isValid = false; break; }
-                    var reqB = Math.sqrt((finalNeededC * 16) / randomA);
-                    if (reqB < minG || reqB > maxG) { isValid = false; break; }
-                    randomB = parseFloat(reqB.toFixed(2));
-                    calcC   = truncDec(finalNeededC, 4);
-                }
-
-                currentVolSum += parseFloat(calcC);
-                treeVolSum    += parseFloat(calcC);
-                treeLogsArray.push({ index: logGlobalCounter, length: randomA, girth: randomB.toFixed(2), volume: calcC });
+    // Phase 3: Final micro calibrations
+    currentVolSum = 0;
+    tempLogs.forEach(function(l) { currentVolSum += l.volume; });
+    var microDiff = target - currentVolSum;
+    
+    if (Math.abs(microDiff) > 0) {
+        var lastLog = tempLogs[totalLogs - 1];
+        var finalVol = lastLog.volume + microDiff;
+        if (finalVol > 0) {
+            var finalB = Math.sqrt((finalVol * 16) / lastLog.length);
+            if (finalB >= minG && finalB <= maxG) {
+                lastLog.volume = parseFloat(truncDec(finalVol, 4));
+                lastLog.girth = parseFloat(finalB.toFixed(2));
             }
-
-            if (!isValid) break;
-            tempStructuredData.push({ treeNum: t+1, logsCount: treeLogLimit, totalVolume: truncDec(treeVolSum,4), logs: treeLogsArray });
-        }
-
-        if (isValid && Math.abs(currentVolSum - target) < 0.0005) {
-            structuredTreeData  = tempStructuredData;
-            displayGrandSummary = treeMode
-                ? '✅ Trees: ' + totalTrees + '  |  Logs: ' + totalLogs + '  |  Volume: ' + truncDec(currentVolSum,4) + ' m³'
-                : '✅ Total Logs: ' + totalLogs + '  |  Total Volume: ' + truncDec(currentVolSum,4) + ' m³';
-            processingSuccess = true;
-            break;
         }
     }
 
-    if (processingSuccess) {
-        renderTable(treeMode, totalTrees);
-    } else {
-        calculateFallback(target, totalLogs, minG, maxG, aVals, treeMode, totalTrees, treeLogsDistribution);
+    currentVolSum = 0;
+    tempLogs.forEach(function(l) { currentVolSum += l.volume; });
+
+    // Phase 4: Structural tree packaging
+    structuredTreeData = [];
+    var logIdx = 0;
+
+    for (var t = 0; t < totalTrees; t++) {
+        var treeLogLimit = treeLogsDistribution[t];
+        var treeLogsArray = [];
+        var treeVolSum = 0;
+
+        for (var l = 0; l < treeLogLimit; l++) {
+            var targetLog = tempLogs[logIdx];
+            treeVolSum += targetLog.volume;
+            treeLogsArray.push({
+                index: targetLog.index,
+                length: targetLog.length,
+                girth: targetLog.girth.toFixed(2),
+                volume: targetLog.volume.toFixed(4)
+            });
+            logIdx++;
+        }
+
+        structuredTreeData.push({
+            treeNum: t + 1,
+            logsCount: treeLogLimit,
+            totalVolume: truncDec(treeVolSum, 4),
+            logs: treeLogsArray
+        });
     }
+
+    displayGrandSummary = treeMode
+        ? '✅ Trees: ' + totalTrees + '  |  Logs: ' + totalLogs + '  |  Volume: ' + truncDec(currentVolSum, 4) + ' m³'
+        : '✅ Total Logs: ' + totalLogs + '  |  Total Volume: ' + truncDec(currentVolSum, 4) + ' m³';
+
+    renderTable(treeMode, totalTrees);
+}
+
+function renderTable(treeMode, totalTrees) {
+    var wrapper = document.getElementById('tableWrapper');
+    wrapper.innerHTML = '';
+
+    structuredTreeData.forEach(function(tree) {
+        if (treeMode) {
+            var treeBlock = document.createElement('div');
+            treeBlock.className = 'tree-block';
+            
+            var hdr = document.createElement('div'); 
+            hdr.className = 'tree-header'; 
+            hdr.innerHTML = '<i class="fa-solid fa-tree"></i> Tree ' + tree.treeNum; 
+            treeBlock.appendChild(hdr);
+            
+            var tbl = document.createElement('table'); 
+            tbl.innerHTML = '<thead><tr><th># Serial</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
+            var tbody = document.createElement('tbody');
+            
+            tree.logs.forEach(function(log) {
+                var tr = document.createElement('tr'); 
+                tr.innerHTML = '<td>' + log.index + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>'; 
+                tbody.appendChild(tr);
+            });
+            tbl.appendChild(tbody); 
+            treeBlock.appendChild(tbl);
+            
+            var ftr = document.createElement('div'); 
+            ftr.className = 'tree-footer'; 
+            ftr.innerHTML = '<span>' + tree.logsCount + ' Logs</span><span>Total Vol: ' + tree.totalVolume + ' m³</span>'; 
+            treeBlock.appendChild(ftr);
+            wrapper.appendChild(treeBlock);
+        }
+    });
+
+    if (!treeMode) {
+        var normalWrap = document.createElement('div'); 
+        normalWrap.className = 'normal-table-wrap';
+        var tbl = document.createElement('table'); 
+        tbl.innerHTML = '<thead><tr><th># Serial</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
+        var tbody = document.createElement('tbody');
+        
+        structuredTreeData[0].logs.forEach(function(log) {
+            var tr = document.createElement('tr'); 
+            tr.innerHTML = '<td>' + log.index + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>'; 
+            tbody.appendChild(tr);
+        });
+        tbl.appendChild(tbody); 
+        normalWrap.appendChild(tbl); 
+        wrapper.appendChild(normalWrap);
     }
 
-        function calculateFallback() {
-        var target    = parseFloat(document.getElementById('target').value);
-        var totalLogs = parseInt(document.getElementById('totalLogs').value);
-        var minG      = parseFloat(document.getElementById('minB').value);
-        var maxG      = parseFloat(document.getElementById('maxB').value);
-        var aVals     = getSelectedLengths();
-        var numTreesVal = document.getElementById('numTrees').value.trim();
-        var treeMode    = numTreesVal !== '';
-        var totalTrees = treeMode ? parseInt(numTreesVal) : 1;
-
-        var base = Math.floor(totalLogs / totalTrees);
-        var treeLogsDistribution = [];
-        for(var t=0; t<totalTrees; t++) treeLogsDistribution.push(base);
-        var rem = totalLogs - (base * totalTrees);
-        for(var r=0; r<rem; r++) treeLogsDistribution[r]++;
-
-        var avgA = aVals.reduce(function(x, y) { return x + y; }, 0) / aVals.length;
-        var idealB = Math.sqrt((target * 16) / (totalLogs * avgA));
-        if(idealB < minG) idealB = minG;
-        if(idealB > maxG) idealB = maxG;
-
-        var currentVolSum = 0;
-        var logGlobalCounter = 0;
-        structuredTreeData = [];
-
-        var wrapper = document.getElementById('tableWrapper');
-        wrapper.innerHTML = '';
-
-        for (var t = 0; t < totalTrees; t++) {
-            var currentTreeLogLimit = treeLogsDistribution[t];
-            var treeLogsArray = [];
-            var treeVolSum = 0;
-
-            for (var l = 0; l < currentTreeLogLimit; l++) {
-                logGlobalCounter++;
-                var a = aVals[Math.floor(Math.random() * aVals.length)];
-                var finalB = parseFloat(idealB.toFixed(2));
-                var displayC = truncDec((a * Math.pow(finalB, 2)) / 16, 4);
-
-                if (logGlobalCounter === totalLogs) {
-                    var neededC = target - currentVolSum;
-                    if (neededC < 0) neededC = 0.0001;
-                    displayC = truncDec(neededC, 4);
-                    var computedB = Math.sqrt((neededC * 16) / a);
-                    if(computedB < minG) computedB = minG;
-                    if(computedB > maxG) computedB = maxG;
-                    finalB = parseFloat(computedB.toFixed(2));
-                }
-
+    document.getElementById('loadingMsg').style.display = 'none';
+    var sumBox = document.getElementById('summaryBox');
+    sumBox.innerText = displayGrandSummary;
+    sumBox.style.display = 'block';
+    document.getElementById('downloadBtn').style.display = 'block';
+}
+    
                 currentVolSum += parseFloat(displayC);
                 treeVolSum += parseFloat(displayC);
 
