@@ -354,7 +354,6 @@
 
     currentVolSum = 0;
     tempLogs.forEach(function(l) { currentVolSum += l.volume; });
-
     // Phase 4: Structural tree packaging
     structuredTreeData = [];
     var logIdx = 0;
@@ -366,6 +365,7 @@
 
         for (var l = 0; l < treeLogLimit; l++) {
             var targetLog = tempLogs[logIdx];
+            if (!targetLog) break;
             treeVolSum += targetLog.volume;
             treeLogsArray.push({
                 index: targetLog.index,
@@ -425,7 +425,7 @@ function renderTable(treeMode, totalTrees) {
         }
     });
 
-    if (!treeMode) {
+    if (!treeMode && structuredTreeData.length > 0) {
         var normalWrap = document.createElement('div'); 
         normalWrap.className = 'normal-table-wrap';
         var tbl = document.createElement('table'); 
@@ -449,46 +449,6 @@ function renderTable(treeMode, totalTrees) {
     document.getElementById('downloadBtn').style.display = 'block';
 }
     
-                currentVolSum += parseFloat(displayC);
-                treeVolSum += parseFloat(displayC);
-
-                treeLogsArray.push({ index: logGlobalCounter, length: a, girth: finalB.toFixed(2), volume: displayC });
-            }
-
-            structuredTreeData.push({ treeNum: t + 1, logsCount: currentTreeLogLimit, totalVolume: truncDec(treeVolSum, 4), logs: treeLogsArray });
-
-            if (treeMode) {
-                var treeBlock = document.createElement('div');
-                treeBlock.className = 'tree-block';
-                var hdr = document.createElement('div'); hdr.className = 'tree-header'; hdr.innerHTML = '<span class="icon">🌳</span> Tree ' + (t + 1); treeBlock.appendChild(hdr);
-                var tbl = document.createElement('table'); tbl.innerHTML = '<thead><tr><th># Serial</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
-                var tbody = document.createElement('tbody');
-                treeLogsArray.forEach(function(log) {
-                    var tr = document.createElement('tr'); tr.innerHTML = '<td>' + log.index + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>'; tbody.appendChild(tr);
-                });
-                tbl.appendChild(tbody); treeBlock.appendChild(tbl);
-                var ftr = document.createElement('div'); ftr.className = 'tree-footer'; ftr.innerHTML = '<span>🪵 ' + currentTreeLogLimit + ' Logs</span><span>Total Volume: ' + truncDec(treeVolSum, 4) + ' m³</span>'; treeBlock.appendChild(ftr);
-                wrapper.appendChild(treeBlock);
-            }
-        }
-
-        if (!treeMode) {
-            var normalWrap = document.createElement('div'); normalWrap.className = 'normal-table-wrap';
-            var tbl = document.createElement('table'); tbl.innerHTML = '<thead><tr><th># Serial</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
-            var tbody = document.createElement('tbody');
-            structuredTreeData[0].logs.forEach(function(log) {
-                var tr = document.createElement('tr'); tr.innerHTML = '<td>' + log.index + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>'; tbody.appendChild(tr);
-            });
-            tbl.appendChild(tbody); normalWrap.appendChild(tbl); wrapper.appendChild(normalWrap);
-        }
-
-        displayGrandSummary = '✅ Total Logs: ' + totalLogs + ' | Total Volume: ' + truncDec(currentVolSum, 4) + ' m³';
-        document.getElementById('summaryBox').innerText = displayGrandSummary;
-        document.getElementById('loadingMsg').style.display = 'none';
-        document.getElementById('summaryBox').style.display = 'block';
-        document.getElementById('downloadBtn').style.display = 'block';
-    }
-
     function trackUsage(aVals, target, totalLogs) {
         var device = navigator.userAgent;
         var now = new Date();
