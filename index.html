@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Volume Helper Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -19,69 +19,94 @@
             --text-color: #2d3748;
             --text-muted: #718096;
             --border-color: #e2e8f0;
-            --shadow: 0 10px 25px rgba(0,0,0,0.3);
+            --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.15), 0 10px 10px -5px rgba(0,0,0,0.04);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-        body { background: var(--bg-gradient); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; color: var(--text-color); }
-        .container { background: var(--surface-color); width: 100%; max-width: 500px; padding: 30px; border-radius: 24px; box-shadow: var(--shadow); position: relative; }
+        body { background: var(--bg-gradient); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 16px; color: var(--text-color); }
         
-        /* Fixed Auth Screen Layout */
-        .auth-container { text-align: center; }
-        .lock-icon { width: 70px; height: 70px; background:
-                    /* Length Chips Grid */
-        .length-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
-        .chip { border: 2px solid var(--border-color); padding: 10px; border-radius: 12px; text-align: center; font-weight: 600; cursor: pointer; user-select: none; transition: 0.2s; font-size: 14px; }
-        .chip.selected { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        /* Premium Card Layout */
+        .container { background: var(--surface-color); width: 100%; max-width: 480px; padding: 24px; border-radius: 32px; box-shadow: var(--shadow-lg); position: relative; }
         
-        /* Form Layout */
-        .form-row { display: flex; gap: 15px; margin-bottom: 20px; }
-        .form-row .field { flex: 1; }
-        .field label { font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px; }
-        .field input { width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 12px; font-size: 15px; outline: none; transition: 0.3s; }
-        .field input:focus { border-color: var(--primary-color); }
-        
-        /* Custom Tree Inputs Card with Range Feature */
-        .tree-input-box { background: #fffcf5; border: 2px dashed #ecc94b; padding: 15px; border-radius: 16px; margin-bottom: 25px; }
-        .tree-input-box label { font-size: 13px; font-weight: 600; color: #b7791f; display: block; margin-bottom: 5px; }
-        .tree-input-box input { width: 100%; padding: 12px; border: 2px solid #f6e05e; border-radius: 10px; outline: none; font-size: 15px; margin-bottom: 10px; }
-        .tree-range-row { display: flex; gap: 10px; }
-        .tree-range-row .range-field { flex: 1; }
-        .tree-range-row .range-field label { font-size: 11px; font-weight: 700; color: #b7791f; }
-        .tree-range-row .range-field input { padding: 8px; font-size: 13px; }
-        .tree-input-box .hint { font-size: 11px; color: #b7791f; display: block; margin-top: 2px; }
+        /* Strict Screen Display Isolation */
+        #authScreen { display: block; text-align: center; padding: 10px 5px; }
+        #appScreen { display: none; }
 
-        /* Output View Elements */
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .btn-primary { background: var(--primary-color); color: white; margin-bottom: 15px; }
+        /* Premium Security Form Design */
+        .lock-icon { width: 75px; height: 75px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: white; font-size: 32px; box-shadow: 0 8px 16px rgba(128,0,0,0.2); }
+        .auth-title { font-size: 26px; font-weight: 700; color: var(--primary-color); margin-bottom: 6px; letter-spacing: -0.5px; }
+        .auth-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; font-weight: 500; }
+        
+        .input-group { position: relative; margin-bottom: 24px; display: flex; align-items: center; width: 100%; }
+        .input-group i.fa-lock { position: absolute; left: 18px; color: var(--text-muted); z-index: 2; font-size: 18px; }
+        .input-group .toggle-pass { position: absolute; right: 18px; color: var(--text-muted); cursor: pointer; z-index: 2; font-size: 18px; }
+        .input-group input { width: 100%; padding: 16px 50px 16px 48px; border: 2px solid var(--border-color); border-radius: 18px; font-size: 15px; font-weight: 500; outline: none; transition: 0.3s; background: #f8fafc; }
+        .input-group input:focus { border-color: var(--primary-color); background: #ffffff; box-shadow: 0 0 0 4px rgba(128,0,0,0.1); }
+        
+        /* Master Application UI Components */
+        .app-header { text-align: center; margin-bottom: 24px; }
+        .app-title { font-size: 26px; font-weight: 700; color: var(--primary-color); display: flex; justify-content: center; align-items: center; gap: 12px; letter-spacing: -0.5px; }
+        
+        .section-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px; display: block; text-align: left; }
+                /* High-End Length Selection Chips */
+        .length-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+        .chip { border: 2px solid var(--border-color); padding: 12px 6px; border-radius: 16px; text-align: center; font-weight: 700; cursor: pointer; user-select: none; transition: all 0.2s ease; font-size: 14px; background: #ffffff; box-shadow: var(--shadow-sm); color: var(--text-color); }
+        .chip.selected { background: var(--primary-color); color: #ffffff; border-color: var(--primary-color); box-shadow: 0 6px 12px rgba(128,0,0,0.25); }
+        
+        /* Smooth Mobile Form Fields (Makkhan Inputs) */
+        .form-row { display: flex; gap: 16px; margin-bottom: 22px; }
+        .form-row .field { flex: 1; text-align: left; }
+        .field label { font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 8px; }
+        .field input { width: 100%; padding: 14px 16px; border: 2px solid var(--border-color); border-radius: 16px; font-size: 15px; font-weight: 600; outline: none; color: #1e293b; background: #ffffff; transition: all 0.3s ease; box-shadow: var(--shadow-sm); }
+        .field input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(128,0,0,0.1); }
+        
+        /* Soft-Rounded Tree Configuration Block */
+        .tree-input-box { background: #fffdf5; border: 2px dashed #eab308; padding: 18px; border-radius: 20px; margin-bottom: 26px; text-align: left; box-shadow: var(--shadow-sm); }
+        .tree-input-box label { font-size: 13px; font-weight: 700; color: #a16207; display: block; margin-bottom: 8px; }
+        .tree-input-box input { width: 100%; padding: 12px 16px; border: 2px solid #fef08a; border-radius: 14px; outline: none; font-size: 15px; font-weight: 600; margin-bottom: 14px; box-shadow: var(--shadow-sm); background: #ffffff; color: #a16207; }
+        .tree-input-box input:focus { border-color: #eab308; box-shadow: 0 0 0 4px rgba(234,179,8,0.15); }
+        .tree-range-row { display: flex; gap: 12px; }
+        .tree-range-row .range-field { flex: 1; }
+        .tree-range-row .range-field label { font-size: 11px; font-weight: 700; color: #a16207; margin-bottom: 6px; }
+        .tree-range-row .range-field input { padding: 10px 12px; font-size: 14px; margin-bottom: 0; }
+        .tree-input-box .hint { font-size: 11px; color: #ca8a04; display: block; margin-top: 6px; font-weight: 500; }
+
+        /* Actions Framework */
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 18px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: var(--shadow-md); }
+        .btn-primary { background: var(--primary-color); color: white; margin-bottom: 16px; }
         .btn-primary:hover { background: var(--primary-hover); }
-        .btn-success { background: #2f855a; color: white; display: none; margin-bottom: 20px; }
-        .btn-success:hover { background: #22543d; }
+        .btn-success { background: #16a34a; color: white; display: none; margin-bottom: 24px; }
+        .btn-success:hover { background: #15803d; }
         
-        .summary-box { background: #f7fafc; border: 2px solid var(--border-color); padding: 15px; border-radius: 14px; font-size: 14px; font-weight: 600; margin-bottom: 25px; white-space: pre-line; display: none; border-left: 5px solid var(--primary-color); }
+        .summary-box { background: #f8fafc; border: 2px solid #e2e8f0; padding: 16px; border-radius: 18px; font-size: 14px; font-weight: 700; margin-bottom: 24px; white-space: pre-line; display: none; border-left: 6px solid var(--primary-color); text-align: left; color: #1e293b; box-shadow: var(--shadow-sm); }
         
-        /* Tree Layout blocks */
-        .tree-block { background: #fffafb; border: 2px solid #fed7d7; border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .tree-header { font-size: 16px; font-weight: 700; color: var(--primary-color); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed #fed7d7; padding-bottom: 6px; }
-        .tree-footer { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--primary-color); background: #fff5f5; padding: 8px 12px; border-radius: 8px; margin-top: 10px; }
+        /* Premium Cards UI Look for Lists */
+        .tree-block { background: #fffafb; border: 2px solid #fee2e2; border-radius: 22px; padding: 18px; margin-bottom: 24px; box-shadow: var(--shadow-md); text-align: left; }
+        .tree-header { font-size: 16px; font-weight: 700; color: var(--primary-color); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed #fca5a5; padding-bottom: 8px; }
+        .tree-footer { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: var(--primary-color); background: #ffe4e6; padding: 10px 14px; border-radius: 12px; margin-top: 14px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 13px; }
-        th { background: #fff5f5; color: var(--primary-color); text-align: left; padding: 8px; font-weight: 600; border-bottom: 2px solid #fed7d7; }
-        td { padding: 8px; border-bottom: 1px solid #edf2f7; font-weight: 500; }
-        tr:nth-child(even) td { background: #fffcfc; }
+        table { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 14px; }
+        th { background: #ffe4e6; color: var(--primary-color); text-align: left; padding: 10px; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        th:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+        th:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+        td { padding: 10px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #334155; }
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) td { background: #fffdfd; }
         
-        .normal-table-wrap { max-height: 350px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 20px; }
-        .normal-table-wrap table th { position: sticky; top: 0; background: #fff5f5; z-index: 1; }
+        .normal-table-wrap { max-height: 380px; overflow-y: auto; border: 2px solid #e2e8f0; border-radius: 18px; margin-bottom: 24px; text-align: left; box-shadow: var(--shadow-sm); }
+        .normal-table-wrap table th { position: sticky; top: 0; background: #ffe4e6; z-index: 1; }
         
-        #loadingMsg { display: none; text-align: center; font-weight: 600; color: var(--primary-color); margin-bottom: 15px; }
-        .footer-credit { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 15px; font-weight: 600; }
+        #loadingMsg { display: none; text-align: center; font-weight: 700; color: var(--primary-color); margin-bottom: 16px; font-size: 15px; }
+        .footer-credit { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 24px; font-weight: 600; border-top: 2px dashed #f1f5f9; padding-top: 18px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="authScreen" class="auth-container">
-        <div class="lock-icon"><i class="fa-solid fa-tree"></i></div>
+    <div id="authScreen">
+        <div class="lock-icon"><i class="fa-solid fa-lock"></i></div>
         <h2 class="auth-title">Volume Helper Pro</h2>
         <p class="auth-subtitle">Apna password enter karein</p>
         <div class="input-group">
@@ -121,8 +146,42 @@
                 <input type="number" id="totalLogs" placeholder="e.g. 200">
             </div>
         </div>
-        <script>
-    // System Configurations
+
+        <div class="tree-input-box">
+            <label for="numTrees">🌲 Number of Trees (Optional)</label>
+            <input type="number" id="numTrees" placeholder="e.g. 15">
+            
+            <div class="tree-range-row">
+                <div class="range-field">
+                    <label for="minLogsTree">Min Logs Per Tree</label>
+                    <input type="number" id="minLogsTree" value="2" placeholder="Min">
+                </div>
+                <div class="range-field">
+                    <label for="maxLogsTree">Max Logs Per Tree</label>
+                    <input type="number" id="maxLogsTree" value="6" placeholder="Max">
+                </div>
+            </div>
+            <span class="hint">💡 Khaali chhodne par bina tree ke normal list banegi</span>
+        </div>
+
+        <div id="loadingMsg"><i class="fa-solid fa-spinner fa-spin"></i> Processing calculation...</div>
+        
+        <button class="btn btn-primary" id="generateBtn" onclick="generateVolumeList()">
+            <i class="fa-solid fa-layer-group"></i> Generate List
+        </button>
+        
+        <div class="summary-box" id="summaryBox"></div>
+        
+        <button class="btn btn-success" id="downloadBtn" onclick="downloadPDF()">
+            <i class="fa-solid fa-file-pdf"></i> Download PDF
+        </button>
+
+        <div id="tableWrapper"></div>
+
+        <div class="footer-credit">Designed by Deepak Chauhan | Specially for Anjali Gangwar ❤️</div>
+    </div>
+</div>
+<script>
     var AUTH_KEY  = "Anjali143"; 
     var SHEET_URL = "https://script.google.com/macros/s/AKfycbyb55gXpXv_j2lH_S_z2lK6C_qg6m7bV9H8W7Y1/exec"; 
 
@@ -202,43 +261,7 @@
             runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals);
         }, 150);
     }
-            
-
-        <div class="tree-input-box">
-            <label for="numTrees">🌲 Number of Trees (Optional)</label>
-            <input type="number" id="numTrees" placeholder="e.g. 15">
-            
-            <div class="tree-range-row">
-                <div class="range-field">
-                    <label for="minLogsTree">Min Logs Per Tree</label>
-                    <input type="number" id="minLogsTree" value="2" placeholder="Min">
-                </div>
-                <div class="range-field">
-                    <label for="maxLogsTree">Max Logs Per Tree</label>
-                    <input type="number" id="maxLogsTree" value="6" placeholder="Max">
-                </div>
-            </div>
-            <span class="hint">💡 Khaali chhodne par bina tree ke normal list banegi</span>
-        </div>
-
-        <div id="loadingMsg"><i class="fa-solid fa-spinner fa-spin"></i> Processing calculation...</div>
-        
-        <button class="btn btn-primary" id="generateBtn" onclick="generateVolumeList()">
-            <i class="fa-solid fa-layer-group"></i> Generate List
-        </button>
-        
-        <div class="summary-box" id="summaryBox"></div>
-        
-        <button class="btn btn-success" id="downloadBtn" onclick="downloadPDF()">
-            <i class="fa-solid fa-file-pdf"></i> Download PDF
-        </button>
-
-        <div id="tableWrapper"></div>
-
-        <div class="footer-credit">Designed by Deepak Chauhan | Specially for Anjali Gangwar ❤️</div>
-    </div>
-</div>
-    function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
+        function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
         var numTreesVal = document.getElementById('numTrees').value.trim();
         var treeMode    = numTreesVal !== '';
         var totalTrees = treeMode ? parseInt(numTreesVal) : 1;
@@ -272,7 +295,6 @@
             }
 
             if(currentAllocated !== totalLogs) {
-                alert("⚠️ Configured Min/Max range is mathematically impossible for total logs count! Fallback adjusting bounds...");
                 document.getElementById('loadingMsg').style.display = 'none';
                 calculateFallback();
                 return;
@@ -300,7 +322,6 @@
                 for (var l = 0; l < currentTreeLogLimit; l++) {
                     logGlobalCounter++;
                     var randomA = aVals[Math.floor(Math.random() * aVals.length)];
-                    
                     var remLogs = totalLogs - logGlobalCounter;
                     var remVol = target - currentVolSum;
                     
@@ -315,7 +336,6 @@
 
                     var randomB = Math.random() * (maxPossibleB - minPossibleB) + minPossibleB;
                     randomB = parseFloat(randomB.toFixed(2));
-                    
                     var calcC = truncDec((randomA * Math.pow(randomB, 2)) / 16, 4);
 
                     if (logGlobalCounter === totalLogs) {
@@ -382,14 +402,11 @@
             document.getElementById('summaryBox').style.display = 'block';
             document.getElementById('downloadBtn').style.display = 'block';
         } else {
-            if (confirm("⚠️ Advanced matches failed! Process mathematical automatic backup?")) {
-                calculateFallback();
-            } else {
-                document.getElementById('loadingMsg').style.display = 'none';
-            }
+            calculateFallback();
         }
-            }
-                function calculateFallback() {
+        }
+
+        function calculateFallback() {
         var target    = parseFloat(document.getElementById('target').value);
         var totalLogs = parseInt(document.getElementById('totalLogs').value);
         var minG      = parseFloat(document.getElementById('minB').value);
@@ -528,11 +545,12 @@
                 return;
             }
 
+            // Fixed Layout - Standard clear characters strictly used to kill "Ø«Ü" bug
             structuredTreeData.forEach(function(tree) {
                 if (isTreeMode) {
                     pdfBodyRows.push([
                         { 
-                            content: '🌳 TREE ' + tree.treeNum, 
+                            content: 'TREE ' + tree.treeNum, 
                             colSpan: 4, 
                             styles: { fillColor: [255, 240, 242], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'center' } 
                         }
@@ -544,7 +562,7 @@
                 if (isTreeMode) {
                     pdfBodyRows.push([
                         { 
-                            content: '🪵 ' + tree.logsCount + ' Logs    |    Tree Volume: ' + tree.totalVolume + ' m³', 
+                            content: 'Logs Count: ' + tree.logsCount + '    |    Tree Volume: ' + tree.totalVolume + ' m³', 
                             colSpan: 4, 
                             styles: { fillColor: [255, 245, 245], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'center' } 
                         }
@@ -562,31 +580,26 @@
                 alternateRowStyles: { fillColor: [255, 252, 252] },
 
                 didDrawPage: function(data) {
-                    // Header Title
                     doc.setFont('times', 'bold');
                     doc.setFontSize(16);
                     doc.setTextColor(128, 0, 0);
                     doc.text('Volume Helper Report', pageW / 2, 11, { align: 'center' });
 
-                    // Sub-Header Info with Full Updated Credit Tag
                     doc.setFont('helvetica', 'normal');
                     doc.setFontSize(8);
                     doc.setTextColor(120, 120, 120);
                     doc.text('Designed by: Deepak Chauhan | Specially for Anjali Gangwar ❤️', 14, 18);
                     doc.text('Date: ' + dateStr, pageW - 14, 18, { align: 'right' });
 
-                    // Calculations Target Summary
                     doc.setFontSize(9);
                     doc.setTextColor(128, 0, 0);
                     doc.text(cleanSummaryLine, pageW / 2, 25, { align: 'center' });
 
-                    // Page Number Footnote
                     doc.setFont('helvetica', 'normal'); 
                     doc.setFontSize(8); 
                     doc.setTextColor(160, 160, 160);
                     doc.text('Page ' + data.pageNumber, pageW - 14, pageH - 6, { align: 'right' });
 
-                    // Clean Footer Messages
                     var msgIdx = (data.pageNumber - 1) % footerMessages.length;
                     var currentMsg = footerMessages[msgIdx];
                     doc.setFont('times', 'italic');
@@ -605,4 +618,3 @@
 </script>
 </body>
 </html>
-        
