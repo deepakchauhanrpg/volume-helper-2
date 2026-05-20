@@ -934,12 +934,12 @@ function downloadPDF() {
 
         var watermarks = [
             ["by Deepak", "Zameen pe chaand ka tukda", "Anjali"],
-            ["by Deepak", "Dil ka sukoon", "Anjali"],
+            ["by Deepak", "to Dil e sukoon", "Anjali"],
             ["by Deepak", "Ziddi par pyaari", "Anjali"],
-            ["by Deepak", "Meri cute pari", "Anjali"],
-            ["by Deepak", "Bejhijhak bebaak", "Aashi"],
+            ["by Deepak", "to Meri cute pari", "Anjali"],
+            ["by Deepak", "to Bejhijhak bebaak", "Aashi"],
             ["by Deepak", "Smile queen", "Anni"],
-            ["by Deepak", "Meri apni pyaari", "Anjali"],
+            ["by Deepak", "Meri apni pyaari", "Anni"],
             ["ab finally", "Muskura bhi do", "Anjali"]
         ];
 
@@ -1012,8 +1012,8 @@ function downloadPDF() {
                 var hy = cy - 15;
                 
                 doc.moveTo(hx, hy + 35); 
-                doc.cubicBezierCurveTo(hx - 50, hy - 15, hx - 65, hy - 65, hx, hy - 30);
-                doc.cubicBezierCurveTo(hx + 65, hy - 65, hx + 50, hy - 15, hx, hy + 35);
+                doc.curveTo(hx - 50, hy - 15, hx - 65, hy - 65, hx, hy - 30);
+                doc.curveTo(hx + 65, hy - 65, hx + 50, hy - 15, hx, hy + 35);
                 doc.fill();
                 
                 doc.setTextColor(210, 150, 150); 
@@ -1028,7 +1028,7 @@ function downloadPDF() {
             }
         });
 
-        doc.save('VolumeHelper_Deepak_Anjali.pdf');
+        doc.save('Deepak_Anjali.pdf');
     } catch (err) {
         alert("PDF Error: " + err.message + "\nKripya screenshot lelein agar dikkat bani rahe.");
         console.error(err);
@@ -1037,3 +1037,4 @@ function downloadPDF() {
 </script>
 </body>
 </html>
+
