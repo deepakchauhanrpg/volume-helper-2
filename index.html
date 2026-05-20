@@ -514,7 +514,7 @@
         fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     }
 
-    function downloadPDF() {
+        function downloadPDF() {
         try {
             var jsPDF = window.jspdf.jsPDF;
             var doc = new jsPDF('p', 'mm', 'a4');
@@ -534,25 +534,25 @@
             var pageH = doc.internal.pageSize.getHeight();
             var today = new Date();
             var dateStr = today.getDate().toString().padStart(2,'0') + '/' + (today.getMonth()+1).toString().padStart(2,'0') + '/' + today.getFullYear();
-            var cleanSummaryLine = displayGrandSummary ? displayGrandSummary.split('\n')[0] : "";
+            var cleanSummaryLine = displayGrandSummary ? displayGrandSummary.replace('✅ ', '') : "";
 
             var isTreeMode = document.getElementById('numTrees').value.trim() !== "";
             var pdfBodyRows = [];
             var headers = [['# Serial', 'Length (A)', 'Girth (B)', 'Volume (C)']];
 
             if (!structuredTreeData || structuredTreeData.length === 0) {
-                alert("Pehle list generate kijiye!");
+                alert("Pehle list generate kijiye bhai!");
                 return;
             }
 
-            // Fixed Layout - Standard clear characters strictly used to kill "Ø«Ü" bug
+            // High-End Table Structure Compilation
             structuredTreeData.forEach(function(tree) {
                 if (isTreeMode) {
                     pdfBodyRows.push([
                         { 
-                            content: 'TREE ' + tree.treeNum, 
+                            content: '   TREES DETAILS: TREE NO. ' + tree.treeNum, 
                             colSpan: 4, 
-                            styles: { fillColor: [255, 240, 242], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'center' } 
+                            styles: { fillColor: [255, 240, 242], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'left', font: 'courier' } 
                         }
                     ]);
                 }
@@ -562,9 +562,9 @@
                 if (isTreeMode) {
                     pdfBodyRows.push([
                         { 
-                            content: 'Logs Count: ' + tree.logsCount + '    |    Tree Volume: ' + tree.totalVolume + ' m³', 
+                            content: '   LOGS COUNT: ' + tree.logsCount + '     |     TOTAL TREE VOLUME: ' + tree.totalVolume + ' m³', 
                             colSpan: 4, 
-                            styles: { fillColor: [255, 245, 245], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'center' } 
+                            styles: { fillColor: [255, 245, 245], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'right', font: 'helvetica' } 
                         }
                     ]);
                 }
@@ -573,27 +573,50 @@
             doc.autoTable({
                 head: headers,
                 body: pdfBodyRows,
-                startY: 32,
-                margin: { top: 35, bottom: 22 },
-                styles: { fontSize: 9, cellPadding: 4, font: 'helvetica', lineColor: [226, 232, 240], lineWidth: 0.1 },
-                headStyles: { fillColor: [128, 0, 0], textColor: 255, fontStyle: 'bold' },
-                alternateRowStyles: { fillColor: [255, 252, 252] },
+                startY: 38,
+                margin: { top: 40, bottom: 24, left: 14, right: 14 },
+                styles: { fontSize: 9, cellPadding: 4, font: 'helvetica', lineColor: [254, 226, 226], lineWidth: 0.2 },
+                headStyles: { fillColor: [128, 0, 0], textColor: 255, fontStyle: 'bold', fontSize: 10 },
+                alternateRowStyles: { fillColor: [255, 253, 253] },
 
                 didDrawPage: function(data) {
+                    // 1. Top Decorative Premium Border Accent
+                    doc.setFillColor(128, 0, 0);
+                    doc.rect(14, 10, pageW - 28, 1.5, 'F');
+
+                    // 2. Main High-End Title Block
                     doc.setFont('times', 'bold');
-                    doc.setFontSize(16);
+                    doc.setFontSize(18);
                     doc.setTextColor(128, 0, 0);
-                    doc.text('Volume Helper Report', pageW / 2, 11, { align: 'center' });
+                    doc.text('VOLUME HELPER REPORT', pageW / 2, 19, { align: 'center' });
+
+                    // 3. Specially Crafted Sub-Header Credits (No Buggy Icon, Text Only Formatted Style)
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(9.5);
+                    doc.setTextColor(45, 55, 72);
+                    doc.text('Designed by Deepak Chauhan', 14, 26);
+                    
+                    doc.setFont('times', 'italic');
+                    doc.setTextColor(180, 50, 50);
+                    doc.text('  |  Specially for Anjali Gangwar', 58, 26);
 
                     doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(8);
-                    doc.setTextColor(120, 120, 120);
-                    doc.text('Designed by: Deepak Chauhan | Specially for Anjali Gangwar ❤️', 14, 18);
-                    doc.text('Date: ' + dateStr, pageW - 14, 18, { align: 'right' });
+                    doc.setTextColor(113, 128, 150);
+                    doc.text('Date: ' + dateStr, pageW - 14, 26, { align: 'right' });
 
-                    doc.setFontSize(9);
+                    // 4. Clean Performance Metrics Tracker
+                    doc.setFillColor(248, 250, 252);
+                    doc.setDrawColor(226, 232, 240);
+                    doc.roundedRect(14, 29, pageW - 28, 7, 2, 2, 'FD');
+                    
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(9.5);
                     doc.setTextColor(128, 0, 0);
-                    doc.text(cleanSummaryLine, pageW / 2, 25, { align: 'center' });
+                    doc.text(cleanSummaryLine, pageW / 2, 34, { align: 'center' });
+
+                    // 5. Dynamic Romantic Bottom Footer Navigation
+                    doc.setDrawColor(241, 245, 249);
+                    doc.line(14, pageH - 12, pageW - 14, pageH - 12);
 
                     doc.setFont('helvetica', 'normal'); 
                     doc.setFontSize(8); 
@@ -603,8 +626,8 @@
                     var msgIdx = (data.pageNumber - 1) % footerMessages.length;
                     var currentMsg = footerMessages[msgIdx];
                     doc.setFont('times', 'italic');
-                    doc.setFontSize(9);
-                    doc.setTextColor(180, 100, 100); 
+                    doc.setFontSize(10);
+                    doc.setTextColor(180, 80, 80); 
                     doc.text(currentMsg, pageW / 2, pageH - 6, { align: 'center' });
                 }
             });
@@ -614,7 +637,8 @@
             alert("PDF Error: " + err.message);
             console.error(err);
         }
-    }
+        } 
+                    
 </script>
 </body>
 </html>
