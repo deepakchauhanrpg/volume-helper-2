@@ -143,8 +143,7 @@
             60% { transform: translateX(-5px); }
             80% { transform: translateX(5px); }
         }
-
-        /* ── MAIN CONTENT ── */
+                /* ── MAIN CONTENT ── */
         #mainContent { display: none; padding: 20px 15px 40px; }
 
         .card {
@@ -513,9 +512,6 @@
 </div>
 
 <script>
-// ══════════════════════════════════════════
-// CONFIG & CONSTANTS
-// ══════════════════════════════════════════
 var SHEET_URL = "https://script.google.com/macros/s/AKfycbwxSUFIxtroojnp7UHsYZRPqx0iBOpQmaHuHv_ld8-Duz97012D5ioy2NnuqU023iAm/exec";
 var PASS_HASH = btoa("Anjali143");
 var LENGTH_OPTIONS = [0.95, 1.25, 1.55, 1.85, 2.15, 2.45, 2.75, 3.05, 3.35];
@@ -523,9 +519,6 @@ var LENGTH_OPTIONS = [0.95, 1.25, 1.55, 1.85, 2.15, 2.45, 2.75, 3.05, 3.35];
 var structuredTreeData = []; 
 var displayGrandSummary = "";
 
-// ══════════════════════════════════════════
-// LOGIN INTERACTION
-// ══════════════════════════════════════════
 function tryLogin() {
     var val = document.getElementById('passInput').value;
     if (btoa(val) === PASS_HASH) {
@@ -546,9 +539,6 @@ function togglePass() {
     inp.type = inp.type === 'password' ? 'text' : 'password';
 }
 
-// ══════════════════════════════════════════
-// INTERFACE RENDERERS
-// ══════════════════════════════════════════
 function buildCheckboxes() {
     var wrap = document.getElementById('lengthCheckboxes');
     wrap.innerHTML = "";
@@ -563,9 +553,8 @@ function buildCheckboxes() {
         };
         wrap.appendChild(div);
     });
-}
-
-function getSelectedLengths() {
+    }
+    function getSelectedLengths() {
     var items = document.querySelectorAll('.cb-item.checked');
     var vals = [];
     items.forEach(function(el) { vals.push(parseFloat(el.dataset.val)); });
@@ -582,9 +571,6 @@ function randInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// ══════════════════════════════════════════
-// DATA VALIDATION
-// ══════════════════════════════════════════
 function validate() {
     var ok = true;
     ['minB','maxB','target','totalLogs'].forEach(function(id) {
@@ -627,11 +613,419 @@ function validate() {
     return ok;
 }
 
-// ══════════════════════════════════════════
-// BACKGROUND AUTO-RETRY CALCULATION ENGINE
-// ══════════════════════════════════════════
 function calculate() {
     if (!validate()) return;
 
     var target    = parseFloat(document.getElementById('target').value);
-    var t
+    var totalLogs = parseInt(document.getElementById('totalLogs').value);
+    var minG      = parseFloat(document.getElementById('minB').value);
+    var maxG      = parseFloat(document.getElementById('maxB').value);
+    var aVals     = getSelectedLengths();
+
+    var numTreesVal = document.getElementById('numTrees').value.trim();
+    var minLogsVal  = document.getElementById('minLogs').value.trim();
+    var maxLogsVal  = document.getElementById('maxLogs').value.trim();
+    var treeMode    = numTreesVal !== '' && minLogsVal !== '' && maxLogsVal !== '';
+
+    document.getElementById('loadingMsg').style.display = 'block';
+    document.getElementById('summaryBox').style.display = 'none';
+    document.getElementById('downloadBtn').style.display = 'none';
+    document.getElementById('tableWrapper').innerHTML = '';
+
+    setTimeout(function() {
+        var totalTrees = treeMode ? parseInt(numTreesVal) : 1;
+        var globalAttempts = 0;
+        var maxGlobalAttempts = 200; 
+        var processingSuccess = false;
+
+        var tempStructuredData = [];
+        var finalGrandTotal = "0.0000";
+
+        while (globalAttempts < maxGlobalAttempts && !processingSuccess) {
+            globalAttempts++;
+            tempStructuredData = [];
+            var treeLogsDistribution = [];
+
+            if (treeMode) {
+                var minLog = parseInt(minLogsVal);
+                var maxLog = parseInt(maxLogsVal);
+                var assigned = 0;
+
+                for (var t = 0; t < totalTrees; t++) {
+                    var r = randInt(minLog, maxLog);
+                    treeLogsDistribution.push(r);
+                    assigned += r;
+                }
+
+                var diff = totalLogs - assigned;
+                var safetyLoopCounter = 0;
+                while (diff !== 0 && safetyLoopCounter < 3000) {
+                    var idx = Math.floor(Math.random() * totalTrees);
+                    if (diff > 0 && treeLogsDistribution[idx] < maxLog) {
+                        treeLogsDistribution[idx]++;
+                        diff--;
+                    } else if (diff < 0 && treeLogsDistribution[idx] > minLog) {
+                        treeLogsDistribution[idx]--;
+                        diff++;
+                    }
+                    safetyLoopCounter++;
+                }
+            } else {
+                treeLogsDistribution.push(totalLogs);
+            }
+
+            var avgA = aVals.reduce(function(x, y) { return x + y; }, 0) / aVals.length;
+            var idealB = Math.sqrt((target * 16) / (totalLogs * avgA));
+
+            var currentVolSum = 0;
+            var logGlobalCounter = 0;
+            var isGenerationValid = true;
+
+            for (var t = 0; t < totalTrees; t++) {
+                var currentTreeLogLimit = treeLogsDistribution[t];
+                var treeLogsArray = [];
+                var treeVolSum = 0;
+
+                for (var l = 0; l < currentTreeLogLimit; l++) {
+                    logGlobalCounter++;
+                    var a = aVals[Math.floor(Math.random() * aVals.length)];
+                    var displayC = "0.0000";
+                    var finalB = 0;
+
+                    if (logGlobalCounter === totalLogs) {
+                        var neededC = target - currentVolSum;
+                        if (neededC < 0) neededC = 0.0001;
+                        var lastB = Math.sqrt((neededC * 16) / a);
+                        
+                        if (lastB < minG || lastB > maxG) {
+                            isGenerationValid = false;
+                            break; 
+                        }
+                        
+                        finalB = parseFloat(lastB.toFixed(2));
+                        var lastC = (a * Math.pow(finalB, 2)) / 16;
+                        displayC = truncDec(lastC, 4);
+                    } else {
+                        var b = idealB + (Math.random() * 0.2 - 0.1);
+                        if (b < minG) b = minG;
+                        if (b > maxG) b = maxG;
+                        finalB = parseFloat(b.toFixed(2));
+                        var rawC = (a * Math.pow(finalB, 2)) / 16;
+                        displayC = truncDec(rawC, 4);
+                    }
+
+                    currentVolSum += parseFloat(displayC);
+                    treeVolSum += parseFloat(displayC);
+
+                    treeLogsArray.push({
+                        index: l + 1,
+                        length: a,
+                        girth: finalB.toFixed(2),
+                        volume: displayC
+                    });
+                }
+
+                if (!isGenerationValid) break;
+
+                tempStructuredData.push({
+                    treeNum: t + 1,
+                    logsCount: currentTreeLogLimit,
+                    totalVolume: truncDec(treeVolSum, 4),
+                    logs: treeLogsArray
+                });
+            }
+
+            if (isGenerationValid) {
+                structuredTreeData = tempStructuredData;
+                finalGrandTotal = truncDec(currentVolSum, 4);
+                processingSuccess = true;
+            }
+        }
+
+        if (!processingSuccess) {
+            alert("⚠️ Inputs ke beech mathematical combination match nahi ho raha! forced balancing apply ki ja rhi.");
+            calculateFallback();
+            return;
+        }
+
+        var wrapper = document.getElementById('tableWrapper');
+        wrapper.innerHTML = '';
+
+        if (treeMode) {
+            structuredTreeData.forEach(function(treeBlockData) {
+                var treeBlock = document.createElement('div');
+                treeBlock.className = 'tree-block';
+
+                var hdr = document.createElement('div');
+                hdr.className = 'tree-header';
+                hdr.innerHTML = '<span class="icon">🌳</span> Tree ' + treeBlockData.treeNum;
+                treeBlock.appendChild(hdr);
+
+                var tbl = document.createElement('table');
+                tbl.innerHTML = '<thead><tr><th>#</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
+                var tbody = document.createElement('tbody');
+
+                treeBlockData.logs.forEach(function(log) {
+                    var tr = document.createElement('tr');
+                    tr.innerHTML = '<td>' + log.index + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>';
+                    tbody.appendChild(tr);
+                });
+
+                tbl.appendChild(tbody);
+                treeBlock.appendChild(tbl);
+
+                var ftr = document.createElement('div');
+                ftr.className = 'tree-footer';
+                ftr.innerHTML = '<span>🪵 ' + treeBlockData.logsCount + ' Logs</span><span>Total Volume: ' + treeBlockData.totalVolume + ' m³</span>';
+                treeBlock.appendChild(ftr);
+
+                wrapper.appendChild(treeBlock);
+            });
+        } else {
+            var normalWrap = document.createElement('div');
+            normalWrap.className = 'normal-table-wrap';
+
+            var tbl = document.createElement('table');
+            tbl.innerHTML = '<thead><tr><th>#</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
+            var tbody = document.createElement('tbody');
+
+            structuredTreeData[0].logs.forEach(function(log, idx) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + (idx + 1) + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>';
+                tbody.appendChild(tr);
+            });
+
+            tbl.appendChild(tbody);
+            normalWrap.appendChild(tbl);
+            wrapper.appendChild(normalWrap);
+        }
+
+        if (treeMode) {
+            displayGrandSummary = '✅ ' + totalTrees + ' Trees | ' + totalLogs + ' Logs | Total Volume: ' + finalGrandTotal + ' m³';
+        } else {
+            displayGrandSummary = '✅ Total Logs: ' + totalLogs + ' | Total Volume: ' + finalGrandTotal + ' m³';
+        }
+
+        document.getElementById('summaryBox').innerText = displayGrandSummary;
+        document.getElementById('loadingMsg').style.display = 'none';
+        document.getElementById('summaryBox').style.display = 'block';
+        document.getElementById('downloadBtn').style.display = 'block';
+
+        trackUsage(aVals, target, totalLogs);
+    }, 60);
+            }
+
+    function calculateFallback() {
+    var target    = parseFloat(document.getElementById('target').value);
+    var totalLogs = parseInt(document.getElementById('totalLogs').value);
+    var minG      = parseFloat(document.getElementById('minB').value);
+    var maxG      = parseFloat(document.getElementById('maxB').value);
+    var aVals     = getSelectedLengths();
+    var numTreesVal = document.getElementById('numTrees').value.trim();
+    var treeMode    = numTreesVal !== '';
+    var totalTrees = treeMode ? parseInt(numTreesVal) : 1;
+
+    var treeLogsDistribution = [];
+    if(treeMode) {
+        var base = Math.floor(totalLogs/totalTrees);
+        for(var t=0; t<totalTrees; t++) treeLogsDistribution.push(base);
+        var rem = totalLogs - (base*totalTrees);
+        for(var r=0; r<rem; r++) treeLogsDistribution[r]++;
+    } else {
+        treeLogsDistribution.push(totalLogs);
+    }
+
+    var avgA = aVals.reduce(function(x, y) { return x + y; }, 0) / aVals.length;
+    var idealB = Math.sqrt((target * 16) / (totalLogs * avgA));
+    if(idealB < minG) idealB = minG;
+    if(idealB > maxG) idealB = maxG;
+
+    var currentVolSum = 0;
+    var logGlobalCounter = 0;
+    structuredTreeData = [];
+
+    var wrapper = document.getElementById('tableWrapper');
+    wrapper.innerHTML = '';
+
+    for (var t = 0; t < totalTrees; t++) {
+        var currentTreeLogLimit = treeLogsDistribution[t];
+        var treeLogsArray = [];
+        var treeVolSum = 0;
+
+        for (var l = 0; l < currentTreeLogLimit; l++) {
+            logGlobalCounter++;
+            var a = aVals[Math.floor(Math.random() * aVals.length)];
+            var finalB = parseFloat(idealB.toFixed(2));
+            var displayC = truncDec((a * Math.pow(finalB, 2)) / 16, 4);
+
+            if (logGlobalCounter === totalLogs) {
+                var neededC = target - currentVolSum;
+                if (neededC < 0) neededC = 0.0001;
+                displayC = truncDec(neededC, 4);
+                var computedB = Math.sqrt((neededC * 16) / a);
+                if(computedB < minG) computedB = minG;
+                if(computedB > maxG) computedB = maxG;
+                finalB = parseFloat(computedB.toFixed(2));
+            }
+
+            currentVolSum += parseFloat(displayC);
+            treeVolSum += parseFloat(displayC);
+
+            treeLogsArray.push({ index: l + 1, length: a, girth: finalB.toFixed(2), volume: displayC });
+        }
+
+        structuredTreeData.push({ treeNum: t + 1, logsCount: currentTreeLogLimit, totalVolume: truncDec(treeVolSum, 4), logs: treeLogsArray });
+
+        if (treeMode) {
+            var treeBlock = document.createElement('div');
+            treeBlock.className = 'tree-block';
+            var hdr = document.createElement('div'); hdr.className = 'tree-header'; hdr.innerHTML = '<span class="icon">🌳</span> Tree ' + (t + 1); treeBlock.appendChild(hdr);
+            var tbl = document.createElement('table'); tbl.innerHTML = '<thead><tr><th>#</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
+            var tbody = document.createElement('tbody');
+            treeLogsArray.forEach(function(log) {
+                var tr = document.createElement('tr'); tr.innerHTML = '<td>' + log.index + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>'; tbody.appendChild(tr);
+            });
+            tbl.appendChild(tbody); treeBlock.appendChild(tbl);
+            var ftr = document.createElement('div'); ftr.className = 'tree-footer'; ftr.innerHTML = '<span>🪵 ' + currentTreeLogLimit + ' Logs</span><span>Total Volume: ' + truncDec(treeVolSum, 4) + ' m³</span>'; treeBlock.appendChild(ftr);
+            wrapper.appendChild(treeBlock);
+        }
+    }
+
+    if (!treeMode) {
+        var normalWrap = document.createElement('div'); normalWrap.className = 'normal-table-wrap';
+        var tbl = document.createElement('table'); tbl.innerHTML = '<thead><tr><th>#</th><th>Length (A)</th><th>Girth (B)</th><th>Volume (C)</th></tr></thead>';
+        var tbody = document.createElement('tbody');
+        structuredTreeData[0].logs.forEach(function(log, idx) {
+            var tr = document.createElement('tr'); tr.innerHTML = '<td>' + (idx + 1) + '</td><td>' + log.length + '</td><td>' + log.girth + '</td><td>' + log.volume + '</td>'; tbody.appendChild(tr);
+        });
+        tbl.appendChild(tbody); normalWrap.appendChild(tbl); wrapper.appendChild(normalWrap);
+    }
+
+    displayGrandSummary = '✅ Total Logs: ' + totalLogs + ' | Total Volume: ' + truncDec(currentVolSum, 4) + ' m³\n⚠️ forced balance apply.';
+    document.getElementById('summaryBox').innerText = displayGrandSummary;
+    document.getElementById('loadingMsg').style.display = 'none';
+    document.getElementById('summaryBox').style.display = 'block';
+    document.getElementById('downloadBtn').style.display = 'block';
+}
+
+function trackUsage(aVals, target, totalLogs) {
+    var device = navigator.userAgent;
+    var now = new Date();
+    var dateStr = now.getDate().toString().padStart(2,'0') + '/' + (now.getMonth()+1).toString().padStart(2,'0') + '/' + now.getFullYear() + ' ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+    fetch('https://ipapi.co/json/')
+        .then(function(r){ return r.json(); })
+        .then(function(geo) {
+            sendPayload({ datetime: dateStr, lengths: aVals.join(', '), target: target, rows: totalLogs, device: device, city: geo.city || 'Unknown', region: geo.region || 'Unknown' });
+        })
+        .catch(function() {
+            sendPayload({ datetime: dateStr, lengths: aVals.join(', '), target: target, rows: totalLogs, device: device, city: 'Unknown', region: 'Unknown' });
+        });
+}
+
+function sendPayload(payload) {
+    fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+}
+
+function downloadPDF() {
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF();
+
+    var watermarks = [
+        ["by Deepak", "Zameen pe chaand ka tukda", "Anjali"],
+        ["by Deepak", "Dil ka sukoon", "Anjali"],
+        ["by Deepak", "Ziddi par pyaari", "Anjali"],
+        ["by Deepak", "Meri cute pari", "Anjali"],
+        ["by Deepak", "Bejhijhak bebaak", "Aashi"],
+        ["by Deepak", "Smile queen", "Anni"],
+        ["by Deepak", "Meri apni pyaari", "Anjali"],
+        ["ab finally", "Muskura bhi do", "Anjali"]
+    ];
+
+    var pageW = doc.internal.pageSize.getWidth();
+    var pageH = doc.internal.pageSize.getHeight();
+    var today = new Date();
+    var dateStr = today.getDate().toString().padStart(2,'0') + '/' + (today.getMonth()+1).toString().padStart(2,'0') + '/' + today.getFullYear();
+    var cleanSummaryLine = displayGrandSummary.split('\n')[0];
+
+    var isTreeMode = document.getElementById('numTrees').value.trim() !== "";
+    var pdfBodyRows = [];
+    var headers = [['#', 'Length (A)', 'Girth (B)', 'Volume (C)']];
+
+    structuredTreeData.forEach(function(tree) {
+        if (isTreeMode) {
+            pdfBodyRows.push([{ content: '🌳 TREE ' + tree.treeNum, colSpan: 4, styles: { fillColor: [128, 0, 0], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' } }]);
+        }
+        tree.logs.forEach(function(log) {
+            pdfBodyRows.push([log.index, log.length, log.girth, log.volume]);
+        });
+        if (isTreeMode) {
+            pdfBodyRows.push([{ content: '📊 Logs Count: ' + tree.logsCount + '    |    Tree Volume: ' + tree.totalVolume + ' m³', colSpan: 4, styles: { fillColor: [255, 245, 245], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'center' } }]);
+        }
+    });
+
+    doc.autoTable({
+        head: headers,
+        body: pdfBodyRows,
+        startY: 32,
+        margin: { top: 35, bottom: 20 },
+        styles: { fontSize: 9, cellPadding: 4 },
+        headStyles: { fillColor: [128, 0, 0], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [255, 245, 245] },
+
+        didDrawPage: function(data) {
+            doc.setFont('times', 'bold');
+            doc.setFontSize(15);
+            doc.setTextColor(128, 0, 0);
+            doc.text('Volume Helper Report', pageW / 2, 11, { align: 'center' });
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(120, 120, 120);
+            doc.text('Generated by: Deepak Chauhan', 14, 18);
+            doc.text('Date: ' + dateStr, pageW - 14, 18, { align: 'right' });
+
+            doc.setFontSize(9);
+            doc.setTextColor(128, 0, 0);
+            doc.text(cleanSummaryLine, pageW / 2, 25, { align: 'center' });
+
+            var idx = (data.pageNumber - 1) % watermarks.length;
+            var wm  = watermarks[idx];
+            var cx  = pageW / 2;
+            var cy  = pageH / 2;
+
+            doc.saveGraphicsState();
+            doc.setDrawColor(128, 0, 0);
+            doc.setFillColor(128, 0, 0);
+            
+            if (typeof doc.setGState === 'function') {
+                try { doc.setGState(new doc.context2d.pageContext.pdf.GState({ opacity: 0.07 })); } catch(e) {}
+            }
+            
+            var hx = cx;
+            var hy = cy - 15;
+            
+            doc.moveTo(hx, hy + 35); 
+            doc.cubicBezierCurveTo(hx - 50, hy - 15, hx - 65, hy - 65, hx, hy - 30);
+            doc.cubicBezierCurveTo(hx + 65, hy - 65, hx + 50, hy - 15, hx, hy + 35);
+            doc.fill();
+            
+            doc.setTextColor(210, 150, 150); 
+            doc.setFont('times', 'italic'); doc.setFontSize(14); doc.text(wm[0], cx, cy - 12, { align: 'center' });
+            doc.setFont('times', 'bolditalic'); doc.setFontSize(18); doc.text(wm[1], cx, cy + 2, { align: 'center' });
+            doc.setFont('times', 'bold'); doc.setFontSize(22); doc.text(wm[2], cx, cy + 16, { align: 'center' });
+            
+            doc.restoreGraphicsState();
+
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(160, 160, 160);
+            doc.text('Page ' + data.pageNumber, pageW - 14, pageH - 8, { align: 'right' });
+        }
+    });
+
+    doc.save('VolumeHelper_Deepak_Anjali.pdf');
+}
+</script>
+</body>
+</html>
+
+        
