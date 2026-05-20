@@ -262,7 +262,6 @@
         }, 150);
     }
 
-      
     function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
     var numTreesVal    = document.getElementById('numTrees').value.trim();
     var treeMode       = numTreesVal !== '';
@@ -280,7 +279,7 @@
         }
     }
 
-    // Phase 1: Pure Natural & Random Tree Logs Distribution (Varying logs count per tree)
+    // Phase 1: Pure Natural & Random Tree Logs Distribution
     var treeLogsDistribution = [];
     if (treeMode) {
         for (var t = 0; t < totalTrees; t++) treeLogsDistribution.push(minLogsAllowed);
@@ -315,31 +314,25 @@
         var finalB = minG;
         var roll = Math.random();
 
-        // 1. CHHOTE NAGS RULE: 0.95, 1.25, 1.55 length wale patle maal honge
+        // CHHOTE NAGS: 0.95, 1.25, 1.55 length wale patle maal
         if (a <= 1.55) {
             if (roll < 0.75) {
-                // 70-80% under 0.70 girth
                 finalB = minG + Math.random() * (0.70 - minG);
             } else if (roll < 0.93) {
-                // Kuch randomly 1.5 tak
                 finalB = 0.70 + Math.random() * (1.50 - 0.70);
             } else {
-                // Aur kuch 2.0 tak khichenge
                 finalB = 1.50 + Math.random() * (maxG - 1.50);
             }
         } 
-        // 2. BADE NAGS RULE: 1.85, 2.15, 2.45 etc. full range wild distribution
+        // BADE NAGS: Full range dynamic distribution
         else {
             if (roll < 0.45) {
-                // 40-50% under 0.9 girth (as requested)
                 finalB = minG + Math.random() * (0.90 - minG);
             } else {
-                // Baaki ka sara maal 0.90 se maximum limit (jaise 2.0) ke beech wild swing karega
                 finalB = 0.90 + Math.random() * (maxG - 0.90);
             }
         }
 
-        // Extreme bounds protection
         if (finalB < minG) finalB = minG;
         if (finalB > maxG) finalB = maxG;
         finalB = parseFloat(finalB.toFixed(2));
@@ -349,7 +342,7 @@
         tempLogs.push({ index: i, length: a, girth: finalB, volume: parseFloat(volC) });
     }
 
-    // Phase 3: Global Volume Balance Engine without Breaking the Realism
+    // Phase 3: High Precision Global Volume Balancing Engine (For Exact Target Matching)
     var difference = target - currentVolSum;
     var perLogAdjustment = difference / totalLogs;
 
@@ -360,7 +353,7 @@
 
         var computedB = Math.sqrt((newVol * 16) / log.length);
         
-        // Strict boundary validation during adjustment
+        // Anti-overflow bounds lock
         if (computedB < minG) computedB = minG;
         if (computedB > maxG) computedB = maxG;
 
@@ -368,28 +361,34 @@
         log.volume = parseFloat(truncDec((log.length * Math.pow(log.girth, 2)) / 16, 4));
     }
 
-    // Absolute micro adjustments on final logs for decimal perfect target matching
+    // Micro Fine-Tuning loop for exact 0.9999% precision matching
     currentVolSum = 0;
     tempLogs.forEach(function(l) { currentVolSum += l.volume; });
     var microDiff = target - currentVolSum;
 
-    if (Math.abs(microDiff) > 0) {
-        var microAdjustCount = Math.min(10, totalLogs);
-        var microPerLog = microDiff / microAdjustCount;
-        for (var m = totalLogs - microAdjustCount; m < totalLogs; m++) {
-            var lLog = tempLogs[m];
-            var fVol = lLog.volume + microPerLog;
-            if (fVol > 0) {
-                var fB = Math.sqrt((fVol * 16) / lLog.length);
-                if (fB >= minG && fB <= maxG) {
-                    lLog.volume = parseFloat(truncDec(fVol, 4));
-                    lLog.girth = parseFloat(fB.toFixed(2));
+    if (Math.abs(microDiff) > 0.0001) {
+        var step = microDiff > 0 ? 0.0001 : -0.0001;
+        var absDiff = Math.abs(microDiff);
+        var loopGuard = 0;
+        
+        while (absDiff > 0.00005 && loopGuard < 5000) {
+            for (var m = 0; m < totalLogs && absDiff > 0.00005; m++) {
+                var currentLog = tempLogs[m];
+                var nextVol = currentLog.volume + step;
+                if (nextVol > 0) {
+                    var checkB = Math.sqrt((nextVol * 16) / currentLog.length);
+                    if (checkB >= minG && checkB <= maxG) {
+                        currentLog.volume = parseFloat(nextVol.toFixed(4));
+                        currentLog.girth = parseFloat(checkB.toFixed(2));
+                        absDiff -= 0.0001;
+                    }
                 }
             }
+            loopGuard++;
         }
     }
 
-    // Re-verify exact sum
+    // Re-verify exact final sum
     currentVolSum = 0;
     tempLogs.forEach(function(l) { currentVolSum += l.volume; });
 
@@ -424,8 +423,8 @@
     }
 
     displayGrandSummary = treeMode
-        ? '✅ Trees: ' + totalTrees + '  |  Logs: ' + totalLogs + '  |  Volume: ' + truncDec(currentVolSum, 4) + ' m³'
-        : '✅ Total Logs: ' + totalLogs + '  |  Total Volume: ' + truncDec(currentVolSum, 4) + ' m³';
+        ? '🌳 Trees: ' + totalTrees + '  |  🪵 Logs: ' + totalLogs + '  |  Total Vol: ' + truncDec(currentVolSum, 4) + ' m³'
+        : '🪵 Total Logs: ' + totalLogs + '  |  Total Volume: ' + truncDec(currentVolSum, 4) + ' m³';
 
     renderTable(treeMode, totalTrees);
 }
@@ -458,7 +457,7 @@ function renderTable(treeMode, totalTrees) {
             
             var ftr = document.createElement('div'); 
             ftr.className = 'tree-footer'; 
-            ftr.innerHTML = '<span>' + tree.logsCount + ' Logs</span><span>Total Vol: ' + tree.totalVolume + ' m³</span>'; 
+            ftr.innerHTML = '<span><i class="fa-solid fa-layer-group"></i> ' + tree.logsCount + ' Logs</span><span>Total Vol: ' + tree.totalVolume + ' m³</span>'; 
             treeBlock.appendChild(ftr);
             wrapper.appendChild(treeBlock);
         }
@@ -483,11 +482,10 @@ function renderTable(treeMode, totalTrees) {
 
     document.getElementById('loadingMsg').style.display = 'none';
     var sumBox = document.getElementById('summaryBox');
-    sumBox.innerText = displayGrandSummary;
+    sumBox.innerHTML = displayGrandSummary; // Changed innerText to innerHTML for icons
     sumBox.style.display = 'block';
     document.getElementById('downloadBtn').style.display = 'block';
-             }
-    
+}
     
     
     function trackUsage(aVals, target, totalLogs) {
