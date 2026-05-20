@@ -514,19 +514,19 @@
         fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     }
 
-            function downloadPDF() {
+                function downloadPDF() {
         try {
             var jsPDF = window.jspdf.jsPDF;
             var doc = new jsPDF('p', 'mm', 'a4');
 
             var footerMessages = [
-                "by Deepak  |  to Zamee pe chaand ka tukda  |  Anjali",
-                "by Deepak  |  to Dil ka sukoon  |  Anjali",
-                "by Deepak  |  to Ziddi par pyaari  |  Anjali",
-                "by Deepak  |  to Meri apni cute |  Anni",
-                "by Deepak  | to Bejhijhak bebaak  |  Aashi",
-                "by Deepak  |  to Smile queen  |  Anni",
-                "by Deepak  |  to the one and only..  |  Anjjaliii",
+                "by Deepak  |  Zameen pe chaand ka tukda  |  Anjali",
+                "by Deepak  |  Dil ka sukoon  |  Anjali",
+                "by Deepak  |  Ziddi par pyaari  |  Anjali",
+                "by Deepak  |  Meri cute pari  |  Anjali",
+                "by Deepak  |  Bejhijhak bebaak  |  Aashi",
+                "by Deepak  |  Smile queen  |  Anni",
+                "by Deepak  |  Meri apni pyaari  |  Anjali",
                 "ab finally  |  Muskura bhi do  |  Anjali"
             ];
 
@@ -537,126 +537,157 @@
             var cleanSummaryLine = displayGrandSummary ? displayGrandSummary.replace('✅ ', '') : "";
 
             var isTreeMode = document.getElementById('numTrees').value.trim() !== "";
-            var pdfBodyRows = [];
-            
-            // Core standard table configuration (Jaise normal list ka structure hota hai)
-            var headers = [['# Serial', 'Length (A)', 'Girth (B)', 'Volume (C)']];
 
             if (!structuredTreeData || structuredTreeData.length === 0) {
                 alert("Pehle list generate kijiye bhai!");
                 return;
             }
 
-            // Normal Flow compiled exactly like the clean screen data
-            structuredTreeData.forEach(function(tree) {
-                if (isTreeMode) {
-                    pdfBodyRows.push([
-                        { 
-                            content: 'Tree ' + tree.treeNum, 
-                            colSpan: 4, 
-                            styles: { fillColor: [255, 244, 244], textColor: [150, 0, 0], fontStyle: 'bold', halign: 'left', fontSize: 10 } 
-                        }
-                    ]);
-                }
+            var currentY = 44; 
+            var padding = 14;
+
+            // --- FUNCTION: EACH PAGE BASE EMBELLISHMENTS ---
+            function drawPageFrame(pdfDoc, pageNum, totalPages) {
+                // Top Header Accents
+                pdfDoc.setFillColor(141, 25, 36); 
+                pdfDoc.rect(14, 10, pageW - 28, 1.2, 'F');
+
+                pdfDoc.setFont('times', 'bold');
+                pdfDoc.setFontSize(16);
+                pdfDoc.setTextColor(141, 25, 36);
+                pdfDoc.text('VOLUME HELPER REPORT', pageW / 2, 19, { align: 'center' });
+
+                // Premium Credits Layout
+                pdfDoc.setFont('helvetica', 'bold');
+                pdfDoc.setFontSize(9);
+                pdfDoc.setTextColor(55, 65, 81);
+                pdfDoc.text('Designed by Deepak Chauhan', 14, 26);
+                
+                pdfDoc.setFont('times', 'italic');
+                pdfDoc.setTextColor(185, 28, 28);
+                pdfDoc.text('  |  Specially for Anjali Gangwar', 58, 26);
+
+                pdfDoc.setFont('helvetica', 'normal');
+                pdfDoc.setTextColor(107, 114, 128);
+                pdfDoc.text('Date: ' + dateStr, pageW - 14, 26, { align: 'right' });
+
+                // Performance Float Strip
+                pdfDoc.setFillColor(254, 242, 242);
+                pdfDoc.setDrawColor(252, 165, 165);
+                pdfDoc.setLineWidth(0.2);
+                pdfDoc.roundedRect(14, 30, pageW - 28, 7, 1, 1, 'FD');
+                
+                pdfDoc.setFont('helvetica', 'bold');
+                pdfDoc.setFontSize(9);
+                pdfDoc.setTextColor(153, 27, 27);
+                pdfDoc.text(cleanSummaryLine, pageW / 2, 34.8, { align: 'center' });
+
+                // Premium Footer System
+                pdfDoc.setDrawColor(229, 231, 235);
+                pdfDoc.setLineWidth(0.2);
+                pdfDoc.line(14, pageH - 14, pageW - 14, pageH - 14);
+
+                pdfDoc.setFont('helvetica', 'normal'); 
+                pdfDoc.setFontSize(8); 
+                pdfDoc.setTextColor(156, 163, 175);
+                pdfDoc.text('Page ' + pageNum + ' / ' + totalPages, pageW - 14, pageH - 8, { align: 'right' });
+
+                var msgIdx = (pageNum - 1) % footerMessages.length;
+                var currentMsg = footerMessages[msgIdx];
+                pdfDoc.setFont('times', 'italic');
+                pdfDoc.setFontSize(10);
+                pdfDoc.setTextColor(185, 28, 28); 
+                pdfDoc.text(currentMsg, pageW / 2, pageH - 8, { align: 'center' });
+            }
+
+            // --- GENERATE INDIVIDUAL CARDS ON DEMAND ---
+            structuredTreeData.forEach(function(tree, treeIdx) {
+                var cardHeaders = [['# Serial', 'Length (A)', 'Girth (B)', 'Volume (C)']];
+                var cardRows = [];
+                
                 tree.logs.forEach(function(log) {
-                    pdfBodyRows.push([log.index, log.length, log.girth, log.volume]);
+                    cardRows.push([log.index, log.length, log.girth, log.volume]);
                 });
+
+                // Calculate Heights precisely for auto-break mechanics
+                var rowHeight = 6.8; 
+                var headerHeight = 8;
+                var totalTableH = (cardRows.length * rowHeight) + headerHeight;
+                var blockH = totalTableH + (isTreeMode ? 18 : 2); 
+
+                // Boundary protection check before writing to frame
+                if (currentY + blockH > pageH - 18) {
+                    doc.addPage();
+                    currentY = 44; 
+                }
+
+                var startCardY = currentY;
+
                 if (isTreeMode) {
-                    pdfBodyRows.push([
-                        { 
-                            content: 'Logs Count: ' + tree.logsCount + '   |   Total Tree Volume: ' + tree.totalVolume + ' m³', 
-                            colSpan: 4, 
-                            styles: { fillColor: [255, 248, 248], textColor: [45, 55, 72], fontStyle: 'bold', halign: 'right', fontSize: 9 } 
-                        }
-                    ]);
-                }
-            });
-
-            // Standard clean data body table execution
-            doc.autoTable({
-                head: headers,
-                body: pdfBodyRows,
-                startY: 42,
-                margin: { top: 44, bottom: 26, left: 14, right: 14 },
-                styles: { fontSize: 9, cellPadding: 3.5, font: 'helvetica', lineColor: [241, 245, 249], lineWidth: 0.1 },
-                headStyles: { fillColor: [150, 0, 0], textColor: 255, fontStyle: 'bold', fontSize: 9.5 },
-                alternateRowStyles: { fillColor: [255, 253, 253] },
-
-                didDrawPage: function(data) {
-                    // ----------------------------------------------------
-                    // 1. DYNAMIC SHINING GOLDEN HEADER BAND (100 Taka Premium)
-                    // ----------------------------------------------------
-                    // Luxurious Premium Dark Gold base plate
-                    doc.setFillColor(197, 160, 89); 
-                    doc.rect(14, 10, pageW - 28, 22, 'F');
-                    
-                    // Metallic Shine Highlight Strip Inner Border
-                    doc.setFillColor(232, 211, 162); 
-                    doc.rect(14, 30.5, pageW - 28, 1.5, 'F');
-
-                    // Header Text - Bold Royal White Branding
-                    doc.setFont('times', 'bold');
-                    doc.setFontSize(16);
-                    doc.setTextColor(255, 255, 255);
-                    doc.text('VOLUME HELPER REPORT', pageW / 2, 17, { align: 'center' });
-
-                    // Credits Inside Golden Header Band
+                    currentY += 5;
                     doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(9);
-                    doc.setTextColor(255, 255, 255);
-                    doc.text('Designed by Deepak Chauhan', 18, 25);
-                    
-                    doc.setFont('times', 'italic');
-                    doc.setTextColor(255, 240, 210); // Soft warm creamy white for Anjali text
-                    doc.text('  |  Specially for Anjali Gangwar', 60, 25);
-
-                    // Date stamp synced beautifully
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(8.5);
-                    doc.setTextColor(255, 255, 255);
-                    doc.text('Date: ' + dateStr, pageW - 18, 25, { align: 'right' });
-
-
-                    // ----------------------------------------------------
-                    // 2. SUMMARY FLOATER STRIP (Just under the header)
-                    // ----------------------------------------------------
-                    doc.setFillColor(248, 250, 252);
-                    doc.setDrawColor(212, 175, 55); // Rich Golden Outline Accent
-                    doc.setLineWidth(0.3);
-                    doc.roundedRect(14, 34, pageW - 28, 6.5, 1, 1, 'FD');
-                    
-                    doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(9);
-                    doc.setTextColor(150, 0, 0);
-                    doc.text(cleanSummaryLine, pageW / 2, 38.5, { align: 'center' });
-
-
-                    // ----------------------------------------------------
-                    // 3. DYNAMIC SHINING GOLDEN FOOTER BAND
-                    // ----------------------------------------------------
-                    // Footer Metallic Plate
-                    doc.setFillColor(197, 160, 89);
-                    doc.rect(14, pageH - 16, pageW - 28, 10, 'F');
-                    
-                    // Top gold shine edge
-                    doc.setFillColor(232, 211, 162);
-                    doc.rect(14, pageH - 16.8, pageW - 28, 0.8, 'F');
-
-                    // Page counter elegantly pushed inside the plate
-                    doc.setFont('helvetica', 'bold'); 
-                    doc.setFontSize(8); 
-                    doc.setTextColor(255, 255, 255);
-                    doc.text('Page ' + data.pageNumber, pageW - 18, pageH - 10, { align: 'right' });
-
-                    // Golden Cute Dynamic Romantic Message Rotator
-                    var msgIdx = (data.pageNumber - 1) % footerMessages.length;
-                    var currentMsg = footerMessages[msgIdx];
-                    doc.setFont('times', 'italic');
                     doc.setFontSize(10.5);
-                    doc.setTextColor(255, 255, 255); // Solid readable premium white text over gold plate
-                    doc.text(currentMsg, pageW / 2, pageH - 10, { align: 'center' });
+                    doc.setTextColor(153, 27, 27);
+                    doc.text('  Tree ' + tree.treeNum, padding + 3, currentY);
+                    
+                    // Fine light dash separator pattern mirroring web design
+                    doc.setDrawColor(252, 165, 165);
+                    doc.setLineDashPattern([1, 1], 0);
+                    doc.line(padding + 4, currentY + 2, pageW - padding - 4, currentY + 2);
+                    doc.setLineDashPattern([], 0); 
+                    currentY += 4;
                 }
+
+                var internalCursorY = currentY;
+
+                // Render inside strict boundary targets
+                doc.autoTable({
+                    head: cardHeaders,
+                    body: cardRows,
+                    startY: internalCursorY,
+                    margin: { left: padding + 4, right: padding + 4 },
+                    theme: 'striped',
+                    styles: { fontSize: 8.5, cellPadding: 2.2, font: 'helvetica', lineColor: [243, 244, 246], lineWidth: 0.1 },
+                    headStyles: { fillColor: [254, 226, 226], textColor: [153, 27, 27], fontStyle: 'bold' },
+                    alternateRowStyles: { fillColor: [255, 253, 253] },
+                    didDrawPage: function(data) {
+                        currentY = data.cursor.y;
+                    }
+                });
+
+                if (isTreeMode) {
+                    currentY += 2;
+                    doc.setFillColor(254, 242, 242);
+                    doc.setDrawColor(254, 202, 202);
+                    doc.roundedRect(padding + 4, currentY, pageW - (padding * 2) - 8, 6.5, 0.8, 0.8, 'FD');
+                    
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(8.5);
+                    doc.setTextColor(153, 27, 27);
+                    doc.text(' ' + tree.logsCount + ' Logs', padding + 8, currentY + 4.5);
+                    doc.text('Total Volume: ' + tree.totalVolume + ' m³ ', pageW - padding - 10, currentY + 4.5, { align: 'right' });
+                    currentY += 9;
+                } else {
+                    currentY += 3;
+                }
+
+                var endCardY = currentY - 1;
+
+                // Outer Soft Card Box Rendering Loop
+                doc.setDrawColor(254, 202, 202); 
+                doc.setLineWidth(0.35);
+                doc.setFillColor(255, 255, 255);
+                doc.roundedRect(padding, startCardY, pageW - (padding * 2), endCardY - startCardY, 3, 3, 'S');
+                
+                currentY += 6; 
             });
+
+            // --- STAMP DECORATIONS RETROSPECTIVELY ---
+            var totalPagesCount = doc.internal.getNumberOfPages();
+            for (var p = 1; p <= totalPagesCount; p++) {
+                doc.setPage(p);
+                drawPageFrame(doc, p, totalPagesCount);
+            }
 
             doc.save('VolumeHelper_Deepak_Anjali.pdf');
         } catch (err) {
