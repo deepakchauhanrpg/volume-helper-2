@@ -93,7 +93,7 @@
 
 <div class="container">
     <div id="authScreen" class="auth-container">
-        <div class="lock-icon"><i class="fa-solid fa-wood-log"></i></div>
+        <div class="lock-icon"><i class="fa-solid fa-tree"></i></div>
         <h2 class="auth-title">Volume Helper Pro</h2>
         <p class="auth-subtitle">Apna password enter karein</p>
         <div class="input-group">
@@ -455,7 +455,7 @@
         document.getElementById('loadingMsg').style.display = 'none';
         document.getElementById('summaryBox').style.display = 'block';
         document.getElementById('downloadBtn').style.display = 'block';
-                                                 }
+    }
         function trackUsage(aVals, target, totalLogs) {
         var device = navigator.userAgent;
         var now = new Date();
@@ -508,7 +508,7 @@
 
             structuredTreeData.forEach(function(tree) {
                 if (isTreeMode) {
-                    // Tree Headers are made soft Warm-Pink to ensure text is fully readable and watermarks are never hidden
+                    // Eye-friendly soft Rose background so text stays completely readable and watermarks don't get blocked
                     pdfBodyRows.push([{ content: '🌳 TREE ' + tree.treeNum, colSpan: 4, styles: { fillColor: [255, 240, 242], textColor: [128, 0, 0], fontStyle: 'bold', halign: 'center', lineColor: [254, 215, 215], lineWidth: 0.2 } }]);
                 }
                 tree.logs.forEach(function(log) {
@@ -547,17 +547,16 @@
                     var idx = (data.pageNumber - 1) % watermarks.length;
                     var wm  = watermarks[idx];
                     
-                    // Always perfectly centered on the page
                     var cx  = pageW / 2;
                     var cy  = pageH / 2;
 
                     doc.saveGraphicsState();
                     
-                    // Beautiful soft-pink tone for a highly romantic and premium touch
+                    // Soft pastel pink for a clean look
                     doc.setDrawColor(255, 182, 193);
                     doc.setFillColor(255, 182, 193);
                     
-                    // Invisible feel opacity (0.015) so the core data is 100% visible and eyes-friendly
+                    // Micro opacity (0.015) to maintain sharp text and eye-friendly contrast
                     if (typeof doc.setGState === 'function') {
                         try { doc.setGState(new doc.context2d.pageContext.pdf.GState({ opacity: 0.015 })); } catch(e) {}
                     }
@@ -565,18 +564,18 @@
                     var hx = cx;
                     var hy = cy - 20;
                     
-                    // Upscaled premium math matrix for a beautiful large background heart shape on A4
+                    // High-scale vector matrix for one large background heart shape per A4 sheet
                     doc.moveTo(hx, hy + 65); 
                     doc.curveTo(hx - 90, hy - 25, hx - 110, hy - 110, hx, hy - 50);
                     doc.curveTo(hx + 110, hy - 110, hx + 90, hy - 25, hx, hy + 65);
                     doc.fill();
                     
-                    // Modulating distinct opacity for readable messages over the heart
+                    // Modulate text layer opacity over the heart background
                     if (typeof doc.setGState === 'function') {
                         try { doc.setGState(new doc.context2d.pageContext.pdf.GState({ opacity: 0.25 })); } catch(e) {}
                     }
                     
-                    // Premium Rose-Tinted Charcoal tone for text visibility
+                    // Soft Charcoal Rose tone for standard contrast and clarity
                     doc.setTextColor(150, 95, 105); 
                     doc.setFont('times', 'italic'); doc.setFontSize(14); doc.text(wm[0], cx, cy - 14, { align: 'center' });
                     doc.setFont('times', 'bolditalic'); doc.setFontSize(19); doc.text(wm[1], cx, cy + 2, { align: 'center' });
