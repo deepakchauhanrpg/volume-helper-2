@@ -514,7 +514,7 @@
         fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     }
 
-        function downloadPDF() {
+    function downloadPDF() {
         try {
             var jsPDF = window.jspdf.jsPDF;
             var doc = new jsPDF('p', 'mm', 'a4');
@@ -546,9 +546,9 @@
             var currentY = 44; 
             var padding = 14;
 
-            // --- ALL PAGES PREMIUM TEMPLATE ENGINE ---
+            // --- ALL PAGES CLEAN TOP & BOTTOM FRAME ---
             function drawPageFrame(pdfDoc, pageNum, totalPages) {
-                // Top Signature Accent Accent Line
+                // Top Signature Accent Line
                 pdfDoc.setFillColor(141, 25, 36); 
                 pdfDoc.rect(14, 10, pageW - 28, 1.2, 'F');
 
@@ -574,14 +574,14 @@
 
                 // Screen Styled Summary Floater
                 pdfDoc.setFillColor(254, 242, 242);
-                pdfDoc.setDrawColor(252, 165, 165);
+                pdfDoc.setDrawColor(254, 202, 202);
                 pdfDoc.setLineWidth(0.25);
                 pdfDoc.roundedRect(14, 30, pageW - 28, 7, 1, 1, 'FD');
                 
                 pdfDoc.setFont('helvetica', 'bold');
                 pdfDoc.setFontSize(9);
                 pdfDoc.setTextColor(153, 27, 27);
-                pdfDoc.text('📊  ' + cleanSummaryLine, pageW / 2, 34.8, { align: 'center' });
+                pdfDoc.text('Summary: ' + cleanSummaryLine, pageW / 2, 34.8, { align: 'center' });
 
                 // Footer Axis Separator Line
                 pdfDoc.setDrawColor(229, 231, 235);
@@ -628,10 +628,17 @@
                 if (isTreeMode) {
                     currentY += 6;
                     
-                    // Web Card Tree Icon 🌳 Implementation
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(11);
-                    doc.text('🌳', padding + 4, currentY);
+                    // 🌳 CUSTOM HAND-DRAWN HIGH-DEF TREE LOGO 🌳
+                    var tx = padding + 6;
+                    var ty = currentY - 1.2;
+                    // Tree Trunk (Tana)
+                    doc.setFillColor(146, 64, 14); // Dark brown
+                    doc.rect(tx - 0.6, ty + 0.4, 1.2, 2.2, 'F');
+                    // Tree Bush (Patte) - Tri-Circle Compound Layering for Real Tree Feel
+                    doc.setFillColor(34, 197, 94); // Vibrant Green
+                    doc.circle(tx, ty - 1.4, 1.6, 'F');
+                    doc.circle(tx - 1.0, ty - 0.6, 1.3, 'F');
+                    doc.circle(tx + 1.0, ty - 0.6, 1.3, 'F');
 
                     // Tree Label Title Text
                     doc.setFont('helvetica', 'bold');
@@ -671,15 +678,22 @@
                     doc.setDrawColor(254, 226, 226);
                     doc.roundedRect(padding + 4, currentY, pageW - (padding * 2) - 8, 7, 1, 1, 'FD');
                     
-                    // Log Icon 🪵 Element Inside Bottom Box
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(9);
-                    doc.text('🪵', padding + 7, currentY + 4.8);
+                    // 🪵 CUSTOM HAND-DRAWN 3D ROUNDED WOOD LOG LOGO 🪵
+                    var lx = padding + 7;
+                    var ly = currentY + 2.2;
+                    // Log Bark Base (Main Cylinder body)
+                    doc.setFillColor(180, 83, 9); // Rich Golden Brown
+                    doc.rect(lx + 1, ly, 3.2, 2.6, 'F');
+                    // Side Cut-off Rounded Ring (Isometric Log Ends)
+                    doc.setFillColor(217, 119, 6); // Soft Light Wood Color ring face
+                    doc.ellipse(lx + 1, ly + 1.3, 0.8, 1.3, 'F');
+                    doc.setFillColor(251, 191, 36); // Inner core layer ring 
+                    doc.ellipse(lx + 1, ly + 1.3, 0.4, 0.7, 'F');
 
                     doc.setFont('helvetica', 'bold');
                     doc.setFontSize(9);
                     doc.setTextColor(153, 27, 27);
-                    doc.text(' ' + tree.logsCount + ' Logs', padding + 12, currentY + 4.8);
+                    doc.text(tree.logsCount + ' Logs', padding + 13, currentY + 4.8);
                     doc.text('Total Volume: ' + tree.totalVolume + ' m³ ', pageW - padding - 8, currentY + 4.8, { align: 'right' });
                     currentY += 10;
                 } else {
@@ -689,7 +703,6 @@
                 var endCardY = currentY - 2;
 
                 // --- POPUP CARD STYLE ENVELOPE SHADOW CONTAINER ---
-                // Outer Border with custom soft web design stroke weight
                 doc.setDrawColor(254, 219, 219); 
                 doc.setLineWidth(0.4);
                 doc.setFillColor(255, 255, 255);
@@ -710,9 +723,8 @@
             alert("PDF Error: " + err.message);
             console.error(err);
         }
-        }
-                   
-                    
+    }
+    
 </script>
 </body>
 </html>
