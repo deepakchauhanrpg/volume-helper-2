@@ -506,7 +506,9 @@ function renderTable(treeMode, totalTrees) {
     function sendPayload(payload) {
         fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     }
-        function downloadPDF() {
+                    doc.text(tree.logsCount + ' Logs   |   Total Vol: ' + tree.totalVolume + ' m³', padding + 9, fY - 0.7);
+
+     function downloadPDF() {
         try {
             var jsPDF = window.jspdf.jsPDF;
             var doc = new jsPDF('p', 'mm', 'a4');
@@ -538,27 +540,18 @@ function renderTable(treeMode, totalTrees) {
             var targetInputVal = parseFloat(document.getElementById('target').value) || 0;
             var cleanSummaryLine = displayGrandSummary ? displayGrandSummary.replace(/[🌳🪵]/g, '').trim() : "";
 
-            // Page wise trackers
             var pageLogsCount = {};
             var pageVolumeSum = {};
-            var currentY = 44; // Safe starting point below grand summary box
-
-            function checkPageSpace(requiredHeight) {
-                if (currentY + requiredHeight > pageH - 28) {
-                    doc.addPage();
-                    drawPageFramework(doc.internal.getNumberOfPages());
-                    currentY = 44; 
-                }
-            }
+            var currentY = 44; 
 
             function drawPageFramework(p) {
                 doc.setPage(p);
                 
-                // Top Blue Line
+                // Top Border
                 doc.setFillColor(30, 58, 138); 
                 doc.rect(14, 10, pageW - 28, 1.2, 'F');
 
-                // Header Titles
+                // Header Axis
                 doc.setFont('times', 'bold');
                 doc.setFontSize(15);
                 doc.setTextColor(30, 58, 138); 
@@ -574,19 +567,19 @@ function renderTable(treeMode, totalTrees) {
                 doc.setTextColor(107, 114, 128);
                 doc.text('Date: ' + dateStr, pageW - 14, 22.5, { align: 'right' });
 
-                // Grand Summary Box
+                // Grand Summary Panel Block
                 doc.setFillColor(248, 250, 252);
                 doc.setDrawColor(226, 232, 240);
                 doc.setLineWidth(0.25);
                 doc.roundedRect(14, 26, pageW - 28, 7, 1, 1, 'FD');
                 
-                // 🌳 Tree Vector
+                // 🌳 Top Tree Vector
                 var sx = 17.5; var sy = 30.5;
                 doc.setFillColor(146, 64, 14); doc.rect(sx - 0.3, sy + 0.2, 0.6, 1.2, 'F');
                 doc.setFillColor(34, 197, 94); doc.circle(sx, sy - 0.8, 1.0, 'F');
                 doc.circle(sx - 0.6, sy - 0.3, 0.8, 'F'); doc.circle(sx + 0.6, sy - 0.3, 0.8, 'F');
 
-                // 🪵 Log Vector
+                // 🪵 Top Log Vector
                 var lx = 21.5; var ly = 30.2;
                 doc.setFillColor(180, 83, 9); doc.rect(lx - 0.8, ly - 0.6, 1.8, 1.2, 'F');
                 doc.setFillColor(251, 191, 36); doc.ellipse(lx + 1, ly, 0.3, 0.6, 'F');
@@ -596,32 +589,35 @@ function renderTable(treeMode, totalTrees) {
                 doc.setTextColor(30, 58, 138);
                 doc.text('    Summary: ' + cleanSummaryLine, 23, 30.7);
 
-                // Footer Base Separator
+                // Footer Baseline
                 doc.setDrawColor(229, 231, 235);
                 doc.setLineWidth(0.2);
                 doc.line(14, pageH - 21, pageW - 14, pageH - 21);
             }
 
-            // Draw first page skeleton immediately
             drawPageFramework(1);
 
             if (isTreeMode) {
-                // Loop through each tree to draw standalone beautiful cards/boxes
                 structuredTreeData.forEach(function(tree) {
-                    var estimatedTableHeight = 7 + (tree.logs.length * 5.7) + 7; 
-                    var totalBoxHeight = 6 + estimatedTableHeight + 2; 
+                    var estimatedTableHeight = 6 + (tree.logs.length * 6) + 6;
+                    var totalBoxHeight = 6 + estimatedTableHeight + 2;
 
-                    checkPageSpace(totalBoxHeight);
+                    // Safe Page Break Evaluation
+                    if (currentY + totalBoxHeight > pageH - 28) {
+                        doc.addPage();
+                        drawPageFramework(doc.internal.getNumberOfPages());
+                        currentY = 44;
+                    }
 
                     var boxStartY = currentY;
-                    
-                    // Render Outer Rounded Card Container Box
-                    doc.setFillColor(255, 255, 255);
-                    doc.setDrawColor(239, 68, 68); // Light red/pink border accent
-                    doc.setLineWidth(0.2);
-                    doc.roundedRect(padding + 2, boxStartY, pageW - (padding * 2) - 4, totalBoxHeight, 1.5, 1.5, 'FD');
 
-                    // 🌳 Draw Custom Header Inside the Box
+                    // Container Rounded Card Red Accent Wall
+                    doc.setFillColor(255, 255, 255);
+                    doc.setDrawColor(239, 68, 68);
+                    doc.setLineWidth(0.2);
+                    doc.roundedRect(padding + 2, boxStartY, pageW - (padding * 2) - 4, totalBoxHeight, 1.2, 1.2, 'FD');
+
+                    // 🌳 Inside Box Header Vector
                     var hY = boxStartY + 4.5;
                     doc.setFillColor(146, 64, 14); doc.rect(padding + 5.7, hY - 1.0, 0.5, 1.2, 'F'); 
                     doc.setFillColor(34, 197, 94); doc.circle(padding + 6, hY - 1.8, 0.9, 'F');
@@ -637,7 +633,6 @@ function renderTable(treeMode, totalTrees) {
                         tableBody.push([log.index, log.length, log.girth, log.volume]);
                     });
 
-                    // Inject the log grid inside the box limits
                     doc.autoTable({
                         head: [['# Serial', 'Length (A)', 'Girth (B)', 'Volume (C)']],
                         body: tableBody,
@@ -659,12 +654,13 @@ function renderTable(treeMode, totalTrees) {
                         }
                     });
 
-                    currentY = doc.autoTable.previous.startY + doc.autoTable.previous.height + 1;
-
-                    // 🪵 Draw Custom Footer Strip Inside the Card Box Container
-                    var fY = currentY + 4;
+                    // Track position cleanly based on table termination point
+                    var finalTableY = doc.autoTable.previous.finalY || (boxStartY + 6 + estimatedTableHeight);
+                    
+                    // 🪵 Inside Box Custom Footer Strip Integration
+                    var fY = finalTableY + 4;
                     doc.setFillColor(254, 242, 242);
-                    doc.rect(padding + 3, currentY + 0.5, pageW - (padding * 2) - 6, 5.5, 'F');
+                    doc.rect(padding + 3, finalTableY + 0.5, pageW - (padding * 2) - 6, 5.5, 'F');
 
                     doc.setFillColor(180, 83, 9); doc.rect(padding + 5.2, fY - 1.5, 1.6, 1.1, 'F');
                     doc.setFillColor(251, 191, 36); doc.ellipse(padding + 6.8, fY - 0.95, 0.25, 0.55, 'F');
@@ -674,10 +670,9 @@ function renderTable(treeMode, totalTrees) {
                     doc.setTextColor(30, 58, 138);
                     doc.text(tree.logsCount + ' Logs   |   Total Vol: ' + tree.totalVolume + ' m³', padding + 9, fY - 0.7);
 
-                    currentY = fY + 3.5; // Update spacing for next card loop
+                    currentY = fY + 4; 
                 });
             } else {
-                // Without Tree Mode - Single Uniform Clean Table
                 var normalRows = [];
                 if (structuredTreeData[0] && structuredTreeData[0].logs) {
                     structuredTreeData[0].logs.forEach(function(log) {
@@ -705,7 +700,7 @@ function renderTable(treeMode, totalTrees) {
                 });
             }
 
-            // --- FINAL BOTTOM RENDER PASS (METRICS, MESSAGES & ROYAL VECTORS) ---
+            // --- DECORATION AND METRICS ASSIGNMENT LOOP ---
             var totalPagesCount = doc.internal.getNumberOfPages();
             var accumulatedVolumeUsed = 0;
 
@@ -719,7 +714,6 @@ function renderTable(treeMode, totalTrees) {
                 var remainingTarget = targetInputVal - accumulatedVolumeUsed;
                 if (remainingTarget < 0.0001 || p === totalPagesCount) remainingTarget = 0;
 
-                // Page summary dynamic variables
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(8.5);
                 doc.setTextColor(30, 58, 138); 
@@ -731,16 +725,13 @@ function renderTable(treeMode, totalTrees) {
                 doc.setTextColor(185, 28, 28); 
                 doc.text(liveTargetStr, pageW - 14, pageH - 16, { align: 'right' });
 
-                doc.setDrawColor(229, 231, 235);
                 doc.line(14, pageH - 12, pageW - 14, pageH - 12);
 
-                // Page Number System
                 doc.setFont('helvetica', 'normal'); 
                 doc.setFontSize(8); 
                 doc.setTextColor(156, 163, 175);
                 doc.text('Page ' + p + ' / ' + totalPagesCount, pageW - 14, pageH - 6, { align: 'right' });
 
-                // Footer message strings placement
                 var msgIdx = (p - 1) % footerMessages.length;
                 var currentMsg = footerMessages[msgIdx];
                 doc.setFont('times', 'bolditalic');
@@ -748,7 +739,7 @@ function renderTable(treeMode, totalTrees) {
                 doc.setTextColor(185, 28, 28); 
                 doc.text(currentMsg, pageW / 2, pageH - 6, { align: 'center' });
 
-                // 👑 VECTOR HANDMADE ENGINE FOR BOTTOM MESSAGES (👑🌟❤️💝)
+                // Handmade Canvas Extra Shapes Engine (❤️🌟👑💝 Vectors)
                 var textWidth = doc.getTextWidth(currentMsg);
                 var leftX = (pageW / 2) - (textWidth / 2) - 5;
                 var rightX = (pageW / 2) + (textWidth / 2) + 2;
@@ -757,7 +748,6 @@ function renderTable(treeMode, totalTrees) {
                 var vectorType = (p - 1) % 4; 
 
                 if (vectorType === 0) {
-                    // ❤️ RED HEART SHAPE
                     doc.setFillColor(220, 38, 38);
                     doc.lines([[ -1.0, -1.0, -2.0, 0, -1.0, 1.0 ], [ 1.0, 1.0, 1.0, 1.0, 1.0, -1.0 ]], leftX, bY, [1, 1], 'F');
                     doc.lines([[ 1.0, -1.0, 2.0, 0, 1.0, 1.0 ], [ -1.0, 1.0, -1.0, 1.0, -1.0, -1.0 ]], leftX, bY, [1, 1], 'F');
@@ -766,7 +756,6 @@ function renderTable(treeMode, totalTrees) {
                     doc.lines([[ 1.0, -1.0, 2.0, 0, 1.0, 1.0 ], [ -1.0, 1.0, -1.0, 1.0, -1.0, -1.0 ]], rightX + 1.5, bY, [1, 1], 'F');
                 } 
                 else if (vectorType === 1) {
-                    // 🌟 GOLD FOUR-POINTED STARS
                     doc.setFillColor(217, 119, 6);
                     doc.lines([[ 0, -1.2, 1.2, -1.2, 1.2, 0 ]], leftX - 1, bY + 0.5, [1, 1], 'F');
                     doc.lines([[ 1.2, 0, 1.2, 1.2, 0, 1.2 ]], leftX - 1, bY + 0.5, [1, 1], 'F');
@@ -779,7 +768,6 @@ function renderTable(treeMode, totalTrees) {
                     doc.lines([[ -1.2, 0, -1.2, -1.2, 0, -1.2 ]], rightX + 3.4, bY + 0.5, [1, 1], 'F');
                 } 
                 else if (vectorType === 2) {
-                    // 👑 PREMIUM ROYAL CROWN
                     doc.setFillColor(245, 158, 11); 
                     doc.triangle(leftX - 2, bY + 1, leftX - 2, bY - 1, leftX - 0.5, bY + 1, 'F');
                     doc.triangle(leftX - 0.5, bY + 1, leftX, bY - 1.5, leftX + 0.5, bY + 1, 'F');
@@ -793,7 +781,6 @@ function renderTable(treeMode, totalTrees) {
                     doc.setFillColor(220, 38, 38); doc.circle(rightX + 3, bY - 1.6, 0.3, 'F');
                 } 
                 else if (vectorType === 3) {
-                    // 💝 RIBBON WRAPPED HEART
                     doc.setFillColor(244, 63, 94); 
                     doc.circle(leftX - 0.8, bY - 0.4, 0.9, 'F'); doc.circle(leftX + 0.8, bY - 0.4, 0.9, 'F');
                     doc.triangle(leftX - 1.7, bY - 0.2, leftX + 1.7, bY - 0.2, leftX, bY + 1.3, 'F');
@@ -811,7 +798,8 @@ function renderTable(treeMode, totalTrees) {
             alert("PDF Error: " + err.message);
             console.error(err);
         }
-                                                                                                                   }
+                              }
+    }
     
 </script>
 </body>
