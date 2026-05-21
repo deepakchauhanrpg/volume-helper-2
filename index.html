@@ -361,32 +361,33 @@
         log.volume = parseFloat(truncDec((log.length * Math.pow(log.girth, 2)) / 16, 4));
     }
 
-    // Micro Fine-Tuning loop for exact 0.9999% precision matching
+     // Micro Fine-Tuning loop - Pure 100% Target Match Logic
     currentVolSum = 0;
     tempLogs.forEach(function(l) { currentVolSum += l.volume; });
     var microDiff = target - currentVolSum;
 
     if (Math.abs(microDiff) > 0.0001) {
         var step = microDiff > 0 ? 0.0001 : -0.0001;
-        var absDiff = Math.abs(microDiff);
+        var absDiff = Math.round(Math.abs(microDiff) * 10000);
         var loopGuard = 0;
-        
-        while (absDiff > 0.00005 && loopGuard < 5000) {
-            for (var m = 0; m < totalLogs && absDiff > 0.00005; m++) {
-                var currentLog = tempLogs[m];
-                var nextVol = currentLog.volume + step;
-                if (nextVol > 0) {
-                    var checkB = Math.sqrt((nextVol * 16) / currentLog.length);
-                    if (checkB >= minG && checkB <= maxG) {
-                        currentLog.volume = parseFloat(nextVol.toFixed(4));
-                        currentLog.girth = parseFloat(checkB.toFixed(2));
-                        absDiff -= 0.0001;
-                    }
+
+        while (absDiff > 0 && loopGuard < 4000) {
+            var m = Math.floor(Math.random() * totalLogs);
+            var currentLog = tempLogs[m];
+            var nextVol = currentLog.volume + step;
+            
+            if (nextVol > 0.0001) {
+                var checkB = Math.sqrt((nextVol * 16) / currentLog.length);
+                if (checkB >= minG && checkB <= maxG) {
+                    currentLog.volume = parseFloat(nextVol.toFixed(4));
+                    currentLog.girth = parseFloat(checkB.toFixed(2));
+                    absDiff--;
                 }
             }
             loopGuard++;
         }
     }
+
 
     // Re-verify exact final sum
     currentVolSum = 0;
