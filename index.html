@@ -486,8 +486,7 @@ function renderTable(treeMode, totalTrees) {
     sumBox.style.display = 'block';
     document.getElementById('downloadBtn').style.display = 'block';
 }
-    
-        function trackUsage(aVals, target, totalLogs) {
+    function trackUsage(aVals, target, totalLogs) {
         var device = navigator.userAgent;
         var now = new Date();
         var dateStr = now.getDate().toString().padStart(2,'0') + '/' + (now.getMonth()+1).toString().padStart(2,'0') + '/' + now.getFullYear() + ' ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
@@ -507,11 +506,6 @@ function renderTable(treeMode, totalTrees) {
     }
 
     function downloadPDF() {
-        try {
-            var jsPDF = window.jspdf.jsPDF;
-            var doc = new jsPDF('p', 'mm', 'a4');
-
-     function downloadPDF() {
         try {
             var jsPDF = window.jspdf.jsPDF;
             var doc = new jsPDF('p', 'mm', 'a4');
@@ -550,11 +544,11 @@ function renderTable(treeMode, totalTrees) {
             function drawPageFramework(p) {
                 doc.setPage(p);
                 
-                // Top Border
+                // Top Navy Accent Bar
                 doc.setFillColor(30, 58, 138); 
                 doc.rect(14, 10, pageW - 28, 1.2, 'F');
 
-                // Header Axis
+                // Header Setup
                 doc.setFont('times', 'bold');
                 doc.setFontSize(15);
                 doc.setTextColor(30, 58, 138); 
@@ -570,19 +564,19 @@ function renderTable(treeMode, totalTrees) {
                 doc.setTextColor(107, 114, 128);
                 doc.text('Date: ' + dateStr, pageW - 14, 22.5, { align: 'right' });
 
-                // Grand Summary Panel Block
+                // Grand Summary Top Box Panel
                 doc.setFillColor(248, 250, 252);
                 doc.setDrawColor(226, 232, 240);
                 doc.setLineWidth(0.25);
                 doc.roundedRect(14, 26, pageW - 28, 7, 1, 1, 'FD');
                 
-                // 🌳 Top Tree Vector
+                // Top Box Vector Tree 🌳
                 var sx = 17.5; var sy = 30.5;
                 doc.setFillColor(146, 64, 14); doc.rect(sx - 0.3, sy + 0.2, 0.6, 1.2, 'F');
                 doc.setFillColor(34, 197, 94); doc.circle(sx, sy - 0.8, 1.0, 'F');
                 doc.circle(sx - 0.6, sy - 0.3, 0.8, 'F'); doc.circle(sx + 0.6, sy - 0.3, 0.8, 'F');
 
-                // 🪵 Top Log Vector
+                // Top Box Vector Log 🪵
                 var lx = 21.5; var ly = 30.2;
                 doc.setFillColor(180, 83, 9); doc.rect(lx - 0.8, ly - 0.6, 1.8, 1.2, 'F');
                 doc.setFillColor(251, 191, 36); doc.ellipse(lx + 1, ly, 0.3, 0.6, 'F');
@@ -592,12 +586,13 @@ function renderTable(treeMode, totalTrees) {
                 doc.setTextColor(30, 58, 138);
                 doc.text('    Summary: ' + cleanSummaryLine, 23, 30.7);
 
-                // Footer Baseline
+                // Footer Boundary Axis Line
                 doc.setDrawColor(229, 231, 235);
                 doc.setLineWidth(0.2);
                 doc.line(14, pageH - 21, pageW - 14, pageH - 21);
             }
 
+            // Framework Initiation
             drawPageFramework(1);
 
             if (isTreeMode) {
@@ -605,7 +600,7 @@ function renderTable(treeMode, totalTrees) {
                     var estimatedTableHeight = 6 + (tree.logs.length * 6) + 6;
                     var totalBoxHeight = 6 + estimatedTableHeight + 2;
 
-                    // Safe Page Break Evaluation
+                    // Hard Safety Break For Overlaps
                     if (currentY + totalBoxHeight > pageH - 28) {
                         doc.addPage();
                         drawPageFramework(doc.internal.getNumberOfPages());
@@ -614,13 +609,13 @@ function renderTable(treeMode, totalTrees) {
 
                     var boxStartY = currentY;
 
-                    // Container Rounded Card Red Accent Wall
+                    // Container Rounded Card Red Accent Wrapper Box
                     doc.setFillColor(255, 255, 255);
                     doc.setDrawColor(239, 68, 68);
                     doc.setLineWidth(0.2);
                     doc.roundedRect(padding + 2, boxStartY, pageW - (padding * 2) - 4, totalBoxHeight, 1.2, 1.2, 'FD');
 
-                    // 🌳 Inside Box Header Vector
+                    // Inside Box Card Header Tree Vector 🌳
                     var hY = boxStartY + 4.5;
                     doc.setFillColor(146, 64, 14); doc.rect(padding + 5.7, hY - 1.0, 0.5, 1.2, 'F'); 
                     doc.setFillColor(34, 197, 94); doc.circle(padding + 6, hY - 1.8, 0.9, 'F');
@@ -657,10 +652,9 @@ function renderTable(treeMode, totalTrees) {
                         }
                     });
 
-                    // Track position cleanly based on table termination point
                     var finalTableY = doc.autoTable.previous.finalY || (boxStartY + 6 + estimatedTableHeight);
                     
-                    // 🪵 Inside Box Custom Footer Strip Integration
+                    // Inside Box Custom Strip Footer Integration 🪵
                     var fY = finalTableY + 4;
                     doc.setFillColor(254, 242, 242);
                     doc.rect(padding + 3, finalTableY + 0.5, pageW - (padding * 2) - 6, 5.5, 'F');
@@ -703,7 +697,7 @@ function renderTable(treeMode, totalTrees) {
                 });
             }
 
-            // --- DECORATION AND METRICS ASSIGNMENT LOOP ---
+            // --- BOTTOM DECORATION & PAGE MATHEMATICS ENGINE ---
             var totalPagesCount = doc.internal.getNumberOfPages();
             var accumulatedVolumeUsed = 0;
 
@@ -730,6 +724,7 @@ function renderTable(treeMode, totalTrees) {
 
                 doc.line(14, pageH - 12, pageW - 14, pageH - 12);
 
+                // Meta Index Page Counter
                 doc.setFont('helvetica', 'normal'); 
                 doc.setFontSize(8); 
                 doc.setTextColor(156, 163, 175);
@@ -742,7 +737,7 @@ function renderTable(treeMode, totalTrees) {
                 doc.setTextColor(185, 28, 28); 
                 doc.text(currentMsg, pageW / 2, pageH - 6, { align: 'center' });
 
-                // Handmade Canvas Extra Shapes Engine (❤️🌟👑💝 Vectors)
+                // Cute Handmade Vectors Injection (❤️🌟👑💝)
                 var textWidth = doc.getTextWidth(currentMsg);
                 var leftX = (pageW / 2) - (textWidth / 2) - 5;
                 var rightX = (pageW / 2) + (textWidth / 2) + 2;
@@ -801,8 +796,8 @@ function renderTable(treeMode, totalTrees) {
             alert("PDF Error: " + err.message);
             console.error(err);
         }
-                              }
     }
+    
     
 </script>
 </body>
