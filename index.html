@@ -487,8 +487,7 @@ function renderTable(treeMode, totalTrees) {
     document.getElementById('downloadBtn').style.display = 'block';
 }
     
-    
-    function trackUsage(aVals, target, totalLogs) {
+        function trackUsage(aVals, target, totalLogs) {
         var device = navigator.userAgent;
         var now = new Date();
         var dateStr = now.getDate().toString().padStart(2,'0') + '/' + (now.getMonth()+1).toString().padStart(2,'0') + '/' + now.getFullYear() + ' ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
@@ -506,8 +505,12 @@ function renderTable(treeMode, totalTrees) {
     function sendPayload(payload) {
         fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     }
-                    doc.text(tree.logsCount + ' Logs   |   Total Vol: ' + tree.totalVolume + ' m³', padding + 9, fY - 0.7);
-    }
+
+    function downloadPDF() {
+        try {
+            var jsPDF = window.jspdf.jsPDF;
+            var doc = new jsPDF('p', 'mm', 'a4');
+
      function downloadPDF() {
         try {
             var jsPDF = window.jspdf.jsPDF;
