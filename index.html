@@ -506,12 +506,11 @@ function renderTable(treeMode, totalTrees) {
     function sendPayload(payload) {
         fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     }
-    function downloadPDF() {
+        function downloadPDF() {
         try {
             var jsPDF = window.jspdf.jsPDF;
             var doc = new jsPDF('p', 'mm', 'a4');
 
-            // Pure Charming & Teasing Text Strings (Strings are 100% text-safe, vectors draw separately)
             var footerMessages = [
                 "Zamee pe chaand ka tukda ho... aur us par ye pyari si khamoshi!",
                 "Suno... tumhari ye thodi si zidd hi toh is dil ka sukoon hai",
@@ -539,89 +538,27 @@ function renderTable(treeMode, totalTrees) {
             var targetInputVal = parseFloat(document.getElementById('target').value) || 0;
             var cleanSummaryLine = displayGrandSummary ? displayGrandSummary.replace(/[🌳🪵]/g, '').trim() : "";
 
+            // Page wise trackers
             var pageLogsCount = {};
             var pageVolumeSum = {};
+            var currentY = 44; // Safe starting point below grand summary box
 
-            var autoTableRows = [];
-            
-            if (isTreeMode) {
-                structuredTreeData.forEach(function(tree) {
-                    autoTableRows.push({ isCustomHeader: true, text: '     Tree ' + tree.treeNum });
-                    tree.logs.forEach(function(log) {
-                        autoTableRows.push([log.index, log.length, log.girth, log.volume]);
-                    });
-                    autoTableRows.push({ isCustomFooter: true, text: '     ' + tree.logsCount + ' Logs   |   Total Vol: ' + tree.totalVolume + ' m³' });
-                });
-            } else {
-                if (structuredTreeData[0] && structuredTreeData[0].logs) {
-                    structuredTreeData[0].logs.forEach(function(log) {
-                        autoTableRows.push([log.index, log.length, log.girth, log.volume]);
-                    });
+            function checkPageSpace(requiredHeight) {
+                if (currentY + requiredHeight > pageH - 28) {
+                    doc.addPage();
+                    drawPageFramework(doc.internal.getNumberOfPages());
+                    currentY = 44; 
                 }
             }
 
-            doc.autoTable({
-                head: [['# Serial', 'Length (A)', 'Girth (B)', 'Volume (C)']],
-                body: autoTableRows,
-                startY: 44,
-                margin: { left: padding + 4, right: padding + 4, top: 44, bottom: 28 },
-                theme: 'striped',
-                styles: { fontSize: 9, cellPadding: 2.2, font: 'helvetica', lineColor: [249, 250, 251], lineWidth: 0.1 },
-                headStyles: { fillColor: [254, 242, 242], textColor: [30, 58, 138], fontStyle: 'bold', fontSize: 9 }, 
-                alternateRowStyles: { fillColor: [255, 253, 253] },
-                
-                willDrawCell: function(data) {
-                    var originalRow = autoTableRows[data.row.index];
-                    if (originalRow && (originalRow.isCustomHeader || originalRow.isCustomFooter)) {
-                        if (data.cell.section === 'body') {
-                            data.cell.styles.fillColor = [254, 242, 242];
-                            data.cell.styles.textColor = [30, 58, 138];
-                            data.cell.styles.fontStyle = 'bold';
-                            data.cell.text = (data.column.index === 0) ? originalRow.text : '';
-                        }
-                    }
-                },
-                didDrawCell: function(data) {
-                    var pNum = data.pageNumber;
-                    if (!pageLogsCount[pNum]) pageLogsCount[pNum] = 0;
-                    if (!pageVolumeSum[pNum]) pageVolumeSum[pNum] = 0;
-
-                    var rowObj = autoTableRows[data.row.index];
-                    
-                    if (data.cell.section === 'body' && data.column.index === 3 && rowObj && !rowObj.isCustomHeader && !rowObj.isCustomFooter) {
-                        pageLogsCount[pNum] = pageLogsCount[pNum] + 1;
-                        pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(data.cell.text || 0);
-                    }
-
-                    // 🌳 TABLE STRIPS INNER LOGO INJECTOR ENGINE 🪵
-                    if (data.cell.section === 'body' && data.column.index === 0 && rowObj) {
-                        var cX = data.cell.x + 2.5; 
-                        var cY = data.cell.y + (data.cell.height / 2) + 0.5;
-
-                        if (rowObj.isCustomHeader) {
-                            doc.setFillColor(146, 64, 14); doc.rect(cX - 0.3, cY + 0.2, 0.6, 1.2, 'F'); 
-                            doc.setFillColor(34, 197, 94); doc.circle(cX, cY - 0.8, 1.0, 'F');
-                            doc.circle(cX - 0.6, cY - 0.3, 0.8, 'F'); doc.circle(cX + 0.6, cY - 0.3, 0.8, 'F');
-                        } else if (rowObj.isCustomFooter) {
-                            doc.setFillColor(180, 83, 9); doc.rect(cX - 0.8, cY - 0.6, 1.8, 1.2, 'F');
-                            doc.setFillColor(251, 191, 36); doc.ellipse(cX + 1, cY, 0.3, 0.6, 'F');
-                        }
-                    }
-                }
-            });
-
-            // --- DECORATIVE POST LAYERING CANVAS CONTROLLER ---
-            var totalPagesCount = doc.internal.getNumberOfPages();
-            var accumulatedVolumeUsed = 0;
-
-            for (var p = 1; p <= totalPagesCount; p++) {
+            function drawPageFramework(p) {
                 doc.setPage(p);
                 
-                // 1. Midnight Blue Aesthetic Accent Top Line
+                // Top Blue Line
                 doc.setFillColor(30, 58, 138); 
                 doc.rect(14, 10, pageW - 28, 1.2, 'F');
 
-                // 2. Clear Non-Overlapping Centered Header Architecture
+                // Header Titles
                 doc.setFont('times', 'bold');
                 doc.setFontSize(15);
                 doc.setTextColor(30, 58, 138); 
@@ -630,27 +567,26 @@ function renderTable(treeMode, totalTrees) {
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(8.5);
                 doc.setTextColor(75, 85, 99);
-                var subText = "DESIGNED BY DEEPAK CHAUHAN   |   SPECIALLY FOR ANJALI GANGWAR";
-                doc.text(subText, pageW / 2, 22.5, { align: 'center' });
+                doc.text("DESIGNED BY DEEPAK CHAUHAN   |   SPECIALLY FOR ANJALI GANGWAR", pageW / 2, 22.5, { align: 'center' });
 
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(8.5);
                 doc.setTextColor(107, 114, 128);
                 doc.text('Date: ' + dateStr, pageW - 14, 22.5, { align: 'right' });
 
-                // 3. Grand Summary Vector Floater Box Framework
+                // Grand Summary Box
                 doc.setFillColor(248, 250, 252);
                 doc.setDrawColor(226, 232, 240);
                 doc.setLineWidth(0.25);
                 doc.roundedRect(14, 26, pageW - 28, 7, 1, 1, 'FD');
                 
-                // Top Box Vector Tree 🌳
+                // 🌳 Tree Vector
                 var sx = 17.5; var sy = 30.5;
                 doc.setFillColor(146, 64, 14); doc.rect(sx - 0.3, sy + 0.2, 0.6, 1.2, 'F');
                 doc.setFillColor(34, 197, 94); doc.circle(sx, sy - 0.8, 1.0, 'F');
                 doc.circle(sx - 0.6, sy - 0.3, 0.8, 'F'); doc.circle(sx + 0.6, sy - 0.3, 0.8, 'F');
 
-                // Top Box Vector Log 🪵
+                // 🪵 Log Vector
                 var lx = 21.5; var ly = 30.2;
                 doc.setFillColor(180, 83, 9); doc.rect(lx - 0.8, ly - 0.6, 1.8, 1.2, 'F');
                 doc.setFillColor(251, 191, 36); doc.ellipse(lx + 1, ly, 0.3, 0.6, 'F');
@@ -660,12 +596,122 @@ function renderTable(treeMode, totalTrees) {
                 doc.setTextColor(30, 58, 138);
                 doc.text('    Summary: ' + cleanSummaryLine, 23, 30.7);
 
-                // 4. Primary Bottom Footer Separation Bar
+                // Footer Base Separator
                 doc.setDrawColor(229, 231, 235);
                 doc.setLineWidth(0.2);
                 doc.line(14, pageH - 21, pageW - 14, pageH - 21);
+            }
 
-                // --- LIVE DYNAMIC TARGET TRACKER CALCULATION DISPLAY ---
+            // Draw first page skeleton immediately
+            drawPageFramework(1);
+
+            if (isTreeMode) {
+                // Loop through each tree to draw standalone beautiful cards/boxes
+                structuredTreeData.forEach(function(tree) {
+                    var estimatedTableHeight = 7 + (tree.logs.length * 5.7) + 7; 
+                    var totalBoxHeight = 6 + estimatedTableHeight + 2; 
+
+                    checkPageSpace(totalBoxHeight);
+
+                    var boxStartY = currentY;
+                    
+                    // Render Outer Rounded Card Container Box
+                    doc.setFillColor(255, 255, 255);
+                    doc.setDrawColor(239, 68, 68); // Light red/pink border accent
+                    doc.setLineWidth(0.2);
+                    doc.roundedRect(padding + 2, boxStartY, pageW - (padding * 2) - 4, totalBoxHeight, 1.5, 1.5, 'FD');
+
+                    // 🌳 Draw Custom Header Inside the Box
+                    var hY = boxStartY + 4.5;
+                    doc.setFillColor(146, 64, 14); doc.rect(padding + 5.7, hY - 1.0, 0.5, 1.2, 'F'); 
+                    doc.setFillColor(34, 197, 94); doc.circle(padding + 6, hY - 1.8, 0.9, 'F');
+                    doc.circle(padding + 5.4, hY - 1.4, 0.7, 'F'); doc.circle(padding + 6.6, hY - 1.4, 0.7, 'F');
+
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(9.5);
+                    doc.setTextColor(185, 28, 28);
+                    doc.text('Tree ' + tree.treeNum, padding + 9, hY - 0.8);
+
+                    var tableBody = [];
+                    tree.logs.forEach(function(log) {
+                        tableBody.push([log.index, log.length, log.girth, log.volume]);
+                    });
+
+                    // Inject the log grid inside the box limits
+                    doc.autoTable({
+                        head: [['# Serial', 'Length (A)', 'Girth (B)', 'Volume (C)']],
+                        body: tableBody,
+                        startY: boxStartY + 6,
+                        margin: { left: padding + 4, right: padding + 4 },
+                        theme: 'striped',
+                        styles: { fontSize: 8.5, cellPadding: 1.8, font: 'helvetica' },
+                        headStyles: { fillColor: [254, 242, 242], textColor: [30, 58, 138], fontStyle: 'bold' },
+                        alternateRowStyles: { fillColor: [255, 253, 253] },
+                        didDrawCell: function(data) {
+                            var pNum = doc.internal.getNumberOfPages();
+                            if (!pageLogsCount[pNum]) pageLogsCount[pNum] = 0;
+                            if (!pageVolumeSum[pNum]) pageVolumeSum[pNum] = 0;
+
+                            if (data.cell.section === 'body' && data.column.index === 3) {
+                                pageLogsCount[pNum] = pageLogsCount[pNum] + 1;
+                                pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(data.cell.text || 0);
+                            }
+                        }
+                    });
+
+                    currentY = doc.autoTable.previous.startY + doc.autoTable.previous.height + 1;
+
+                    // 🪵 Draw Custom Footer Strip Inside the Card Box Container
+                    var fY = currentY + 4;
+                    doc.setFillColor(254, 242, 242);
+                    doc.rect(padding + 3, currentY + 0.5, pageW - (padding * 2) - 6, 5.5, 'F');
+
+                    doc.setFillColor(180, 83, 9); doc.rect(padding + 5.2, fY - 1.5, 1.6, 1.1, 'F');
+                    doc.setFillColor(251, 191, 36); doc.ellipse(padding + 6.8, fY - 0.95, 0.25, 0.55, 'F');
+
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(8.5);
+                    doc.setTextColor(30, 58, 138);
+                    doc.text(tree.logsCount + ' Logs   |   Total Vol: ' + tree.totalVolume + ' m³', padding + 9, fY - 0.7);
+
+                    currentY = fY + 3.5; // Update spacing for next card loop
+                });
+            } else {
+                // Without Tree Mode - Single Uniform Clean Table
+                var normalRows = [];
+                if (structuredTreeData[0] && structuredTreeData[0].logs) {
+                    structuredTreeData[0].logs.forEach(function(log) {
+                        normalRows.push([log.index, log.length, log.girth, log.volume]);
+                    });
+                }
+                doc.autoTable({
+                    head: [['# Serial', 'Length (A)', 'Girth (B)', 'Volume (C)']],
+                    body: normalRows,
+                    startY: 44,
+                    margin: { left: padding + 4, right: padding + 4, top: 44, bottom: 28 },
+                    theme: 'striped',
+                    styles: { fontSize: 9, cellPadding: 2.2, font: 'helvetica' },
+                    headStyles: { fillColor: [254, 242, 242], textColor: [30, 58, 138], fontStyle: 'bold' },
+                    didDrawCell: function(data) {
+                        var pNum = data.pageNumber;
+                        if (!pageLogsCount[pNum]) pageLogsCount[pNum] = 0;
+                        if (!pageVolumeSum[pNum]) pageVolumeSum[pNum] = 0;
+
+                        if (data.cell.section === 'body' && data.column.index === 3) {
+                            pageLogsCount[pNum] = pageLogsCount[pNum] + 1;
+                            pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(data.cell.text || 0);
+                        }
+                    }
+                });
+            }
+
+            // --- FINAL BOTTOM RENDER PASS (METRICS, MESSAGES & ROYAL VECTORS) ---
+            var totalPagesCount = doc.internal.getNumberOfPages();
+            var accumulatedVolumeUsed = 0;
+
+            for (var p = 1; p <= totalPagesCount; p++) {
+                doc.setPage(p);
+                
                 var pLogs = pageLogsCount[p] || 0;
                 var pVol = pageVolumeSum[p] || 0;
                 accumulatedVolumeUsed += pVol;
@@ -673,6 +719,7 @@ function renderTable(treeMode, totalTrees) {
                 var remainingTarget = targetInputVal - accumulatedVolumeUsed;
                 if (remainingTarget < 0.0001 || p === totalPagesCount) remainingTarget = 0;
 
+                // Page summary dynamic variables
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(8.5);
                 doc.setTextColor(30, 58, 138); 
@@ -684,15 +731,16 @@ function renderTable(treeMode, totalTrees) {
                 doc.setTextColor(185, 28, 28); 
                 doc.text(liveTargetStr, pageW - 14, pageH - 16, { align: 'right' });
 
+                doc.setDrawColor(229, 231, 235);
                 doc.line(14, pageH - 12, pageW - 14, pageH - 12);
 
-                // Synchronized Automatic Page Counter System
+                // Page Number System
                 doc.setFont('helvetica', 'normal'); 
                 doc.setFontSize(8); 
                 doc.setTextColor(156, 163, 175);
                 doc.text('Page ' + p + ' / ' + totalPagesCount, pageW - 14, pageH - 6, { align: 'right' });
 
-                // 5. Clean Text Message Render Axis
+                // Footer message strings placement
                 var msgIdx = (p - 1) % footerMessages.length;
                 var currentMsg = footerMessages[msgIdx];
                 doc.setFont('times', 'bolditalic');
@@ -700,17 +748,16 @@ function renderTable(treeMode, totalTrees) {
                 doc.setTextColor(185, 28, 28); 
                 doc.text(currentMsg, pageW / 2, pageH - 6, { align: 'center' });
 
-                // 6. ⚡ ADVANCED HIGH-DEFINITION HAND-DRAWN VECTOR SHAPE ENGINE ⚡
+                // 👑 VECTOR HANDMADE ENGINE FOR BOTTOM MESSAGES (👑🌟❤️💝)
                 var textWidth = doc.getTextWidth(currentMsg);
                 var leftX = (pageW / 2) - (textWidth / 2) - 5;
                 var rightX = (pageW / 2) + (textWidth / 2) + 2;
                 var bY = pageH - 8;
 
-                // Rotator array logic to draw distinct requested graphics (🌟👑✨💝🙃❤️) per page
                 var vectorType = (p - 1) % 4; 
 
                 if (vectorType === 0) {
-                    // ❤️ RED HEART VECTOR ARCHITECTURE
+                    // ❤️ RED HEART SHAPE
                     doc.setFillColor(220, 38, 38);
                     doc.lines([[ -1.0, -1.0, -2.0, 0, -1.0, 1.0 ], [ 1.0, 1.0, 1.0, 1.0, 1.0, -1.0 ]], leftX, bY, [1, 1], 'F');
                     doc.lines([[ 1.0, -1.0, 2.0, 0, 1.0, 1.0 ], [ -1.0, 1.0, -1.0, 1.0, -1.0, -1.0 ]], leftX, bY, [1, 1], 'F');
@@ -719,7 +766,7 @@ function renderTable(treeMode, totalTrees) {
                     doc.lines([[ 1.0, -1.0, 2.0, 0, 1.0, 1.0 ], [ -1.0, 1.0, -1.0, 1.0, -1.0, -1.0 ]], rightX + 1.5, bY, [1, 1], 'F');
                 } 
                 else if (vectorType === 1) {
-                    // 🌟 GOLD FOUR-POINTED STAR VECTOR + ✨ SPARKLE MATRIX
+                    // 🌟 GOLD FOUR-POINTED STARS
                     doc.setFillColor(217, 119, 6);
                     doc.lines([[ 0, -1.2, 1.2, -1.2, 1.2, 0 ]], leftX - 1, bY + 0.5, [1, 1], 'F');
                     doc.lines([[ 1.2, 0, 1.2, 1.2, 0, 1.2 ]], leftX - 1, bY + 0.5, [1, 1], 'F');
@@ -732,12 +779,12 @@ function renderTable(treeMode, totalTrees) {
                     doc.lines([[ -1.2, 0, -1.2, -1.2, 0, -1.2 ]], rightX + 3.4, bY + 0.5, [1, 1], 'F');
                 } 
                 else if (vectorType === 2) {
-                    // 👑 HAND-DRAWN ROYAL CROWN VECTOR
-                    doc.setFillColor(245, 158, 11); // Imperial Amber Yellow Gold
+                    // 👑 PREMIUM ROYAL CROWN
+                    doc.setFillColor(245, 158, 11); 
                     doc.triangle(leftX - 2, bY + 1, leftX - 2, bY - 1, leftX - 0.5, bY + 1, 'F');
                     doc.triangle(leftX - 0.5, bY + 1, leftX, bY - 1.5, leftX + 0.5, bY + 1, 'F');
                     doc.triangle(leftX + 0.5, bY + 1, leftX + 2, bY - 1, leftX + 2, bY + 1, 'F');
-                    doc.setFillColor(220, 38, 38); doc.circle(leftX, bY - 1.6, 0.3, 'F'); // Ruby Center
+                    doc.setFillColor(220, 38, 38); doc.circle(leftX, bY - 1.6, 0.3, 'F'); 
 
                     doc.setFillColor(245, 158, 11);
                     doc.triangle(rightX + 1, bY + 1, rightX + 1, bY - 1, rightX + 2.5, bY + 1, 'F');
@@ -746,16 +793,14 @@ function renderTable(treeMode, totalTrees) {
                     doc.setFillColor(220, 38, 38); doc.circle(rightX + 3, bY - 1.6, 0.3, 'F');
                 } 
                 else if (vectorType === 3) {
-                    // 💝 RIBBON WRAPPED HEART MATRIX + 🙃 PLAYFUL VECTOR SMILEY
-                    doc.setFillColor(244, 63, 94); // Pink Ribbon Tone
-                    doc.circle(leftX - 0.8, bY - 0.4, 0.9, 'F');
-                    doc.circle(leftX + 0.8, bY - 0.4, 0.9, 'F');
+                    // 💝 RIBBON WRAPPED HEART
+                    doc.setFillColor(244, 63, 94); 
+                    doc.circle(leftX - 0.8, bY - 0.4, 0.9, 'F'); doc.circle(leftX + 0.8, bY - 0.4, 0.9, 'F');
                     doc.triangle(leftX - 1.7, bY - 0.2, leftX + 1.7, bY - 0.2, leftX, bY + 1.3, 'F');
-                    doc.setDrawColor(255, 255, 255); doc.setLineWidth(0.4); doc.line(leftX - 1.2, bY + 0.6, leftX + 1.2, bY - 0.2); // Ribbon Overlay
+                    doc.setDrawColor(255, 255, 255); doc.setLineWidth(0.4); doc.line(leftX - 1.2, bY + 0.6, leftX + 1.2, bY - 0.2); 
 
                     doc.setFillColor(244, 63, 94);
-                    doc.circle(rightX + 1.7, bY - 0.4, 0.9, 'F');
-                    doc.circle(rightX + 3.3, bY - 0.4, 0.9, 'F');
+                    doc.circle(rightX + 1.7, bY - 0.4, 0.9, 'F'); doc.circle(rightX + 3.3, bY - 0.4, 0.9, 'F');
                     doc.triangle(rightX + 0.8, bY - 0.2, rightX + 4.2, bY - 0.2, rightX + 2.5, bY + 1.3, 'F');
                     doc.setDrawColor(255, 255, 255); doc.setLineWidth(0.4); doc.line(rightX + 1.3, bY + 0.6, rightX + 3.7, bY - 0.2);
                 }
@@ -766,9 +811,8 @@ function renderTable(treeMode, totalTrees) {
             alert("PDF Error: " + err.message);
             console.error(err);
         }
-                    }
-                    
-       
+                                                                                                                   }
+    
 </script>
 </body>
 </html>
