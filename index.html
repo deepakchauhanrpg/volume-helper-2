@@ -507,7 +507,7 @@ function renderTable(treeMode, totalTrees) {
         fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     }
                     doc.text(tree.logsCount + ' Logs   |   Total Vol: ' + tree.totalVolume + ' m³', padding + 9, fY - 0.7);
-
+    }
      function downloadPDF() {
         try {
             var jsPDF = window.jspdf.jsPDF;
