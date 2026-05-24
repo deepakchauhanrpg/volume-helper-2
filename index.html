@@ -342,51 +342,68 @@
         tempLogs.push({ index: i, length: a, girth: finalB, volume: parseFloat(volC) });
     }
 
-    // Phase 3: High Precision Global Volume Balancing Engine (For Exact Target Matching)
-    var difference = target - currentVolSum;
-    var perLogAdjustment = difference / totalLogs;
+        // Phase 3 & Micro Tuning: Dynamic Nearest-Target Formula Matcher (No Jhootha Data)
+    // Yeh engine sirf vahi volume dega jo actual formula (A * B^2 / 16) se nikalta hai.
+    
+    var currentTotalVol = 0;
 
+    // Har log ke liye sabse best girth dhoondhein jo formula criteria meet kare
     for (var k = 0; k < totalLogs; k++) {
         var log = tempLogs[k];
-        var newVol = log.volume + perLogAdjustment;
-        if (newVol < 0.0001) newVol = 0.0001;
-
-        var computedB = Math.sqrt((newVol * 16) / log.length);
+        var bestGirth = minG;
+        var bestVol = truncDec((log.length * Math.pow(minG, 2)) / 16, 4);
         
-        // Anti-overflow bounds lock
-        if (computedB < minG) computedB = minG;
-        if (computedB > maxG) computedB = maxG;
+        // Target per log kitna hona chahiye
+        var idealLogVol = target / totalLogs; 
+        var minDiff = Math.abs(parseFloat(bestVol) - idealLogVol);
 
-        log.girth = parseFloat(computedB.toFixed(2));
-        log.volume = parseFloat(truncDec((log.length * Math.pow(log.girth, 2)) / 16, 4));
-    }
+        // Girth ko step-by-step check karenge real formula ke sath
+        for (var g = minG; g <= maxG; g += 0.01) {
+            var currentGirth = parseFloat(g.toFixed(2));
+            var currentVol = truncDec((log.length * Math.pow(currentGirth, 2)) / 16, 4);
+            var currentDiff = Math.abs(parseFloat(currentVol) - idealLogVol);
 
-     // Micro Fine-Tuning loop - Pure 100% Target Match Logic
-    currentVolSum = 0;
-    tempLogs.forEach(function(l) { currentVolSum += l.volume; });
-    var microDiff = target - currentVolSum;
-
-    if (Math.abs(microDiff) > 0.0001) {
-        var step = microDiff > 0 ? 0.0001 : -0.0001;
-        var absDiff = Math.round(Math.abs(microDiff) * 10000);
-        var loopGuard = 0;
-
-        while (absDiff > 0 && loopGuard < 4000) {
-            var m = Math.floor(Math.random() * totalLogs);
-            var currentLog = tempLogs[m];
-            var nextVol = currentLog.volume + step;
-            
-            if (nextVol > 0.0001) {
-                var checkB = Math.sqrt((nextVol * 16) / currentLog.length);
-                if (checkB >= minG && checkB <= maxG) {
-                    currentLog.volume = parseFloat(nextVol.toFixed(4));
-                    currentLog.girth = parseFloat(checkB.toFixed(2));
-                    absDiff--;
-                }
+            if (currentDiff < minDiff) {
+                minDiff = currentDiff;
+                bestGirth = currentGirth;
+                bestVol = currentVol;
             }
-            loopGuard++;
         }
+
+        log.girth = bestGirth;
+        log.volume = parseFloat(bestVol);
     }
+
+    // Micro Adjuster: Agar overall total mein thoda farq hai, toh logs ko optimize karo real volume ke sath
+    var loopGuard = 0;
+    while (loopGuard < 3000) {
+        currentTotalVol = 0;
+        tempLogs.forEach(function(l) { currentTotalVol += l.volume; });
+        var finalDiff = target - currentTotalVol;
+
+        if (Math.abs(finalDiff) < 0.0001) break; // Exact target mil gaya
+
+        var randomLog = tempLogs[Math.floor(Math.random() * totalLogs)];
+        var currentG = randomLog.girth;
+        var newG = finalDiff > 0 ? currentG + 0.01 : currentG - 0.01;
+
+        if (newG >= minG && newG <= maxG) {
+            newG = parseFloat(newG.toFixed(2));
+            var oldV = randomLog.volume;
+            var newV = parseFloat(truncDec((randomLog.length * Math.pow(newG, 2)) / 16, 4));
+            
+            // Check karein ki badlaav se total target ke paas jaa rahe hain ya door
+            var oldTotalDiff = Math.abs(target - currentTotalVol);
+            var newTotalDiff = Math.abs(target - (currentTotalVol - oldV + newV));
+
+            if (newTotalDiff < oldTotalDiff) {
+                randomLog.girth = newG;
+                randomLog.volume = newV;
+            }
+        }
+        loopGuard++;
+    }
+
 
 
     // Re-verify exact final sum
