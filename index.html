@@ -440,10 +440,12 @@
         });
     }
 
-    displayGrandSummary = treeMode
-        ? '🌳 Trees: ' + totalTrees + '  |  🪵 Logs: ' + totalLogs + '  |  Total Vol: ' + truncDec(currentVolSum, 4) + ' m³'
-        : '🪵 Total Logs: ' + totalLogs + '  |  Total Volume: ' + truncDec(currentVolSum, 4) + ' m³';
+  var diff = parseFloat((currentVolSum - target).toFixed(4));
+var diffStr = diff >= 0 ? '(+' + diff.toFixed(4) + ')' : '(' + diff.toFixed(4) + ')';
 
+displayGrandSummary = treeMode
+    ? '🌳 Trees: ' + totalTrees + '  |  🪵 Logs: ' + totalLogs + '  |  Total Vol: ' + truncDec(currentVolSum, 4) + ' m³  ' + diffStr
+    : '🪵 Total Logs: ' + totalLogs + '  |  Total Volume: ' + truncDec(currentVolSum, 4) + ' m³  ' + diffStr;
     renderTable(treeMode, totalTrees);
 }
 
