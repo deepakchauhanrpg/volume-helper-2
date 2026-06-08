@@ -305,32 +305,45 @@
         treeLogsDistribution.push(totalLogs);
     }
 
-    // Phase 2: Create Custom Timber Market Realistic Distribution Curve
+// Phase 2: Smart Realistic Distribution based on volume density
     var tempLogs = [];
     var currentVolSum = 0;
+
+    // Volume per log ratio decide karega distribution
+    var avgVolPerLog = target / totalLogs;
 
     for (var i = 1; i <= totalLogs; i++) {
         var a = aVals[Math.floor(Math.random() * aVals.length)];
         var finalB = minG;
         var roll = Math.random();
 
-        // CHHOTE NAGS: 0.95, 1.25, 1.55 length wale patle maal
-        if (a <= 1.55) {
-            if (roll < 0.75) {
-                finalB = minG + Math.random() * (0.70 - minG);
-            } else if (roll < 0.93) {
-                finalB = 0.70 + Math.random() * (1.50 - 0.70);
-            } else {
-                finalB = 1.50 + Math.random() * (maxG - 1.50);
-            }
-        } 
-        // BADE NAGS: Full range dynamic distribution
-        else {
-            if (roll < 0.45) {
-                finalB = minG + Math.random() * (0.90 - minG);
-            } else {
-                finalB = 0.90 + Math.random() * (maxG - 0.90);
-            }
+        if (avgVolPerLog < 0.08) {
+            // Bahut kam volume per log = patle logs dominant (0.31 - 0.65)
+            if (roll < 0.65)      finalB = minG + Math.random() * (0.55 - minG);
+            else if (roll < 0.88) finalB = 0.55 + Math.random() * (0.85 - 0.55);
+            else if (roll < 0.97) finalB = 0.85 + Math.random() * (1.20 - 0.85);
+            else                  finalB = 1.20 + Math.random() * (maxG - 1.20);
+
+        } else if (avgVolPerLog < 0.20) {
+            // Medium-low = mix with thin dominant
+            if (roll < 0.45)      finalB = minG + Math.random() * (0.65 - minG);
+            else if (roll < 0.75) finalB = 0.65 + Math.random() * (1.10 - 0.65);
+            else if (roll < 0.93) finalB = 1.10 + Math.random() * (1.60 - 1.10);
+            else                  finalB = 1.60 + Math.random() * (maxG - 1.60);
+
+        } else if (avgVolPerLog < 0.50) {
+            // Medium = balanced mix
+            if (roll < 0.25)      finalB = minG + Math.random() * (0.65 - minG);
+            else if (roll < 0.60) finalB = 0.65 + Math.random() * (1.20 - 0.65);
+            else if (roll < 0.87) finalB = 1.20 + Math.random() * (1.70 - 1.20);
+            else                  finalB = 1.70 + Math.random() * (maxG - 1.70);
+
+        } else {
+            // High volume per log = mote logs dominant
+            if (roll < 0.10)      finalB = minG + Math.random() * (0.70 - minG);
+            else if (roll < 0.30) finalB = 0.70 + Math.random() * (1.20 - 0.70);
+            else if (roll < 0.65) finalB = 1.20 + Math.random() * (1.70 - 1.20);
+            else                  finalB = 1.70 + Math.random() * (maxG - 1.70);
         }
 
         if (finalB < minG) finalB = minG;
@@ -342,46 +355,16 @@
         tempLogs.push({ index: i, length: a, girth: finalB, volume: parseFloat(volC) });
     }
 
-        // Phase 3 & Micro Tuning: Dynamic Nearest-Target Formula Matcher (No Jhootha Data)
-    // Yeh engine sirf vahi volume dega jo actual formula (A * B^2 / 16) se nikalta hai.
-    
+    // Phase 3: Micro Tuning - Girth ko uske aaspaas hi adjust karo, same ideal pe mat kheencho
     var currentTotalVol = 0;
-
-    // Har log ke liye sabse best girth dhoondhein jo formula criteria meet kare
-    for (var k = 0; k < totalLogs; k++) {
-        var log = tempLogs[k];
-        var bestGirth = minG;
-        var bestVol = truncDec((log.length * Math.pow(minG, 2)) / 16, 4);
-        
-        // Target per log kitna hona chahiye
-        var idealLogVol = target / totalLogs; 
-        var minDiff = Math.abs(parseFloat(bestVol) - idealLogVol);
-
-        // Girth ko step-by-step check karenge real formula ke sath
-        for (var g = minG; g <= maxG; g += 0.01) {
-            var currentGirth = parseFloat(g.toFixed(2));
-            var currentVol = truncDec((log.length * Math.pow(currentGirth, 2)) / 16, 4);
-            var currentDiff = Math.abs(parseFloat(currentVol) - idealLogVol);
-
-            if (currentDiff < minDiff) {
-                minDiff = currentDiff;
-                bestGirth = currentGirth;
-                bestVol = currentVol;
-            }
-        }
-
-        log.girth = bestGirth;
-        log.volume = parseFloat(bestVol);
-    }
-
-    // Micro Adjuster: Agar overall total mein thoda farq hai, toh logs ko optimize karo real volume ke sath
     var loopGuard = 0;
-    while (loopGuard < 3000) {
+
+    while (loopGuard < 10000) {
         currentTotalVol = 0;
         tempLogs.forEach(function(l) { currentTotalVol += l.volume; });
         var finalDiff = target - currentTotalVol;
 
-        if (Math.abs(finalDiff) < 0.0005) break; // Exact target mil gaya
+        if (Math.abs(finalDiff) < 0.0005) break;
 
         var randomLog = tempLogs[Math.floor(Math.random() * totalLogs)];
         var currentG = randomLog.girth;
@@ -391,8 +374,7 @@
             newG = parseFloat(newG.toFixed(2));
             var oldV = randomLog.volume;
             var newV = parseFloat(truncDec((randomLog.length * Math.pow(newG, 2)) / 16, 4));
-            
-            // Check karein ki badlaav se total target ke paas jaa rahe hain ya door
+
             var oldTotalDiff = Math.abs(target - currentTotalVol);
             var newTotalDiff = Math.abs(target - (currentTotalVol - oldV + newV));
 
