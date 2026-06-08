@@ -381,7 +381,7 @@
         tempLogs.forEach(function(l) { currentTotalVol += l.volume; });
         var finalDiff = target - currentTotalVol;
 
-        if (Math.abs(finalDiff) < 0.0001) break; // Exact target mil gaya
+        if (Math.abs(finalDiff) < 0.0005) break; // Exact target mil gaya
 
         var randomLog = tempLogs[Math.floor(Math.random() * totalLogs)];
         var currentG = randomLog.girth;
@@ -685,7 +685,8 @@ function renderTable(treeMode, totalTrees) {
 
                             if (data.cell.section === 'body' && data.column.index === 3) {
                                 pageLogsCount[pNum] = pageLogsCount[pNum] + 1;
-                                pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(data.cell.text || 0);
+                                var cellVal = Array.isArray(data.cell.text) ? data.cell.text[0] : data.cell.text;
+pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(cellVal || 0);
                             }
                         }
                     });
@@ -729,7 +730,8 @@ function renderTable(treeMode, totalTrees) {
 
                         if (data.cell.section === 'body' && data.column.index === 3) {
                             pageLogsCount[pNum] = pageLogsCount[pNum] + 1;
-                            pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(data.cell.text || 0);
+                            var cellVal = Array.isArray(data.cell.text) ? data.cell.text[0] : data.cell.text;
+pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(cellVal || 0);
                         }
                     }
                 });
