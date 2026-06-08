@@ -182,7 +182,6 @@
     </div>
 </div>
 <script>
-    var AUTH_KEY  = "Anjali143"; 
     var SHEET_URL  = "https://script.google.com/macros/s/AKfycbwxSUFIxtroojnp7UHsYZRPqx0iBOpQmaHuHv_ld8-Duz97012D5ioy2NnuqU023iAm/exec"; 
 
     var defaultLengths = [0.95, 1.25, 1.55, 1.85, 2.15, 2.45, 2.75, 3.05, 3.35];
@@ -201,7 +200,7 @@
 
     function checkAuth() {
         var input = document.getElementById('passwordInput').value.trim();
-        if(input === AUTH_KEY) {
+        if(btoa(input) === "QW5qYWxpMTQz") {
             document.getElementById('authScreen').style.display = 'none';
             document.getElementById('appScreen').style.display = 'block';
         } else {
