@@ -235,7 +235,7 @@
 
     function truncDec(num, dec) {
         var calc = Math.pow(10, dec);
-        return (Math.trunc(num * calc) / calc).toFixed(dec);
+        return (Math.round(num * calc) / calc).toFixed(dec);
     }
 
     function generateVolumeList() {
