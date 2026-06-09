@@ -849,7 +849,8 @@ pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(cellVal || 0);
                 doc.setFont('times', 'bolditalic');
                 doc.setFontSize(10.5);
                 doc.setTextColor(185, 28, 28); 
-                doc.text(currentMsg, pageW / 2, pageH - 6, { align: 'center' });
+                var splitMsg = doc.splitTextToSize(currentMsg, pageW - 40);
+doc.text(splitMsg, pageW / 2, pageH - (splitMsg.length > 1 ? 9 : 6), { align: 'center' });
 
                 // Cute Handmade Vectors Injection (❤️🌟👑💝)
                 var textWidth = doc.getTextWidth(currentMsg);
