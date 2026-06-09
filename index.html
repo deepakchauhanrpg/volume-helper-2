@@ -258,10 +258,10 @@ setTimeout(function(){
         var maxG      = parseFloat(document.getElementById('maxB').value);
 
         if(isNaN(target) || isNaN(totalLogs) || isNaN(minG) || isNaN(maxG)) {
-            alert("Saari fields sahi se fill karo bhai!");
-            return;
-            if(minG >= maxG) { alert("Min Girth, Max Girth se choti honi chahiye!"); return;
-        }
+    alert("Saari fields sahi se fill karo bhai!");
+    return;
+}
+if(minG >= maxG) { alert("Min Girth, Max Girth se choti honi chahiye!"); return; }
 
         document.getElementById('loadingMsg').style.display = 'block';
         document.getElementById('summaryBox').style.display = 'none';
