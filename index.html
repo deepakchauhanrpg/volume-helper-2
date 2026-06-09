@@ -319,56 +319,131 @@ setTimeout(function(){
         treeLogsDistribution.push(totalLogs);
     }
 
-// Phase 2: Smart Realistic Distribution based on volume density
+// Phase 2: Realistic Forest Distribution
     var tempLogs = [];
     var currentVolSum = 0;
-
-    // Volume per log ratio decide karega distribution
     var avgVolPerLog = target / totalLogs;
 
-    for (var i = 1; i <= totalLogs; i++) {
-        var a = aVals[Math.floor(Math.random() * aVals.length)];
-        var finalB = minG;
-        var roll = Math.random();
+    // Length pools
+    var longLengths = [];
+    var tukceLengths = [];
+    aVals.forEach(function(v) {
+        if (v >= 1.85) longLengths.push(v);
+        else tukceLengths.push(v);
+    });
+    if (longLengths.length === 0) longLengths = [2.15, 2.45, 1.85];
+    if (tukceLengths.length === 0) tukceLengths = [0.95, 1.25, 1.55];
 
-        if (avgVolPerLog < 0.08) {
-            // Bahut kam volume per log = patle logs dominant (0.31 - 0.65)
-            if (roll < 0.65)      finalB = minG + Math.random() * (0.55 - minG);
-            else if (roll < 0.88) finalB = 0.55 + Math.random() * (0.85 - 0.55);
-            else if (roll < 0.97) finalB = 0.85 + Math.random() * (1.20 - 0.85);
-            else                  finalB = 1.20 + Math.random() * (maxG - 1.20);
+    // avgVolPerLog ke hisaab se tukde % decide karo
+    var tukdePercent;
+    if      (avgVolPerLog < 0.08) tukdePercent = 0.35;
+    else if (avgVolPerLog < 0.15) tukdePercent = 0.25;
+    else if (avgVolPerLog < 0.35) tukdePercent = 0.15;
+    else if (avgVolPerLog < 0.60) tukdePercent = 0.10;
+    else                          tukdePercent = 0.05;
 
-        } else if (avgVolPerLog < 0.20) {
-            // Medium-low = mix with thin dominant
-            if (roll < 0.45)      finalB = minG + Math.random() * (0.65 - minG);
-            else if (roll < 0.75) finalB = 0.65 + Math.random() * (1.10 - 0.65);
-            else if (roll < 0.93) finalB = 1.10 + Math.random() * (1.60 - 1.10);
-            else                  finalB = 1.60 + Math.random() * (maxG - 1.60);
+    var tukdeCount = Math.round(totalLogs * tukdePercent);
+    var longCount  = totalLogs - tukdeCount;
 
-        } else if (avgVolPerLog < 0.50) {
-            // Medium = balanced mix
-            if (roll < 0.25)      finalB = minG + Math.random() * (0.65 - minG);
-            else if (roll < 0.60) finalB = 0.65 + Math.random() * (1.20 - 0.65);
-            else if (roll < 0.87) finalB = 1.20 + Math.random() * (1.70 - 1.20);
-            else                  finalB = 1.70 + Math.random() * (maxG - 1.70);
-
-        } else {
-            // High volume per log = mote logs dominant
-            if (roll < 0.10)      finalB = minG + Math.random() * (0.70 - minG);
-            else if (roll < 0.30) finalB = 0.70 + Math.random() * (1.20 - 0.70);
-            else if (roll < 0.65) finalB = 1.20 + Math.random() * (1.70 - 1.20);
-            else                  finalB = 1.70 + Math.random() * (maxG - 1.70);
-        }
-
-        if (finalB < minG) finalB = minG;
-        if (finalB > maxG) finalB = maxG;
-        finalB = parseFloat(finalB.toFixed(2));
-
-        var volC = truncDec((a * Math.pow(finalB, 2)) / 16, 4);
-        currentVolSum += parseFloat(volC);
-        tempLogs.push({ index: i, length: a, girth: finalB, volume: parseFloat(volC) });
+    // Long length assign karo — 2.15 dominant
+    function getLongLength() {
+        var r = Math.random();
+        if (r < 0.45)      return 2.15;
+        else if (r < 0.60) return 2.45;
+        else if (r < 0.70) return 1.85;
+        else               return longLengths[Math.floor(Math.random() * longLengths.length)];
     }
 
+    // Tukda length assign karo
+    function getTukdaLength() {
+        var r = Math.random();
+        if (r < 0.45)      return 0.95;
+        else if (r < 0.75) return 1.25;
+        else               return 1.55;
+    }
+
+    // Girth assign karo — avgVolPerLog ke hisaab se
+    function getGirth(isTukda) {
+        var r = Math.random();
+        var g;
+
+        if (avgVolPerLog < 0.08) {
+            // Bahut patle
+            if (isTukda) {
+                if      (r < 0.85) g = minG + Math.random() * (0.55 - minG);
+                else               g = 0.55 + Math.random() * (0.90 - 0.55);
+            } else {
+                if      (r < 0.65) g = minG + Math.random() * (0.65 - minG);
+                else if (r < 0.88) g = 0.65 + Math.random() * (0.90 - 0.65);
+                else if (r < 0.97) g = 0.90 + Math.random() * (1.20 - 0.90);
+                else               g = 1.20 + Math.random() * (maxG - 1.20);
+            }
+        } else if (avgVolPerLog < 0.15) {
+            if (isTukda) {
+                if      (r < 0.75) g = minG + Math.random() * (0.65 - minG);
+                else               g = 0.65 + Math.random() * (1.00 - 0.65);
+            } else {
+                if      (r < 0.45) g = minG + Math.random() * (0.80 - minG);
+                else if (r < 0.75) g = 0.80 + Math.random() * (1.20 - 0.80);
+                else if (r < 0.93) g = 1.20 + Math.random() * (1.60 - 1.20);
+                else               g = 1.60 + Math.random() * (maxG - 1.60);
+            }
+        } else if (avgVolPerLog < 0.35) {
+            if (isTukda) {
+                if      (r < 0.60) g = minG + Math.random() * (0.70 - minG);
+                else               g = 0.70 + Math.random() * (1.10 - 0.70);
+            } else {
+                if      (r < 0.20) g = minG + Math.random() * (0.70 - minG);
+                else if (r < 0.55) g = 0.70 + Math.random() * (1.20 - 0.70);
+                else if (r < 0.85) g = 1.20 + Math.random() * (1.70 - 1.20);
+                else               g = 1.70 + Math.random() * (maxG - 1.70);
+            }
+        } else if (avgVolPerLog < 0.60) {
+            if (isTukda) {
+                if      (r < 0.55) g = minG + Math.random() * (0.65 - minG);
+                else               g = 0.65 + Math.random() * (1.00 - 0.65);
+            } else {
+                if      (r < 0.10) g = minG + Math.random() * (0.70 - minG);
+                else if (r < 0.30) g = 0.70 + Math.random() * (1.20 - 0.70);
+                else if (r < 0.65) g = 1.20 + Math.random() * (1.70 - 1.20);
+                else               g = 1.70 + Math.random() * (maxG - 1.70);
+            }
+        } else {
+            if (isTukda) {
+                if      (r < 0.50) g = minG + Math.random() * (0.65 - minG);
+                else               g = 0.65 + Math.random() * (1.00 - 0.65);
+            } else {
+                if      (r < 0.05) g = minG + Math.random() * (0.70 - minG);
+                else if (r < 0.20) g = 0.70 + Math.random() * (1.20 - 0.70);
+                else if (r < 0.55) g = 1.20 + Math.random() * (1.70 - 1.20);
+                else               g = 1.70 + Math.random() * (maxG - 1.70);
+            }
+        }
+
+        if (g < minG) g = minG;
+        if (g > maxG) g = maxG;
+        return parseFloat(g.toFixed(2));
+    }
+
+    // Saare logs banao — pehle long, phir tukde — shuffle karo
+    var allLogs = [];
+    for (var i = 0; i < longCount; i++)  allLogs.push({ isT: false });
+    for (var i = 0; i < tukdeCount; i++) allLogs.push({ isT: true });
+
+    // Fisher-Yates shuffle — random order mein mix ho jayenge
+    for (var i = allLogs.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = allLogs[i]; allLogs[i] = allLogs[j]; allLogs[j] = tmp;
+    }
+
+    for (var i = 0; i < allLogs.length; i++) {
+        var isTukda = allLogs[i].isT;
+        var a = isTukda ? getTukdaLength() : getLongLength();
+        var finalB = getGirth(isTukda);
+        var volC = truncDec((a * Math.pow(finalB, 2)) / 16, 4);
+        currentVolSum += parseFloat(volC);
+        tempLogs.push({ index: i + 1, length: a, girth: finalB, volume: parseFloat(volC) });
+    }
     // Phase 3: Micro Tuning - Girth ko uske aaspaas hi adjust karo, same ideal pe mat kheencho
     var currentTotalVol = 0;
     var loopGuard = 0;
