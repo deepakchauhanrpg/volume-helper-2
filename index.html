@@ -657,6 +657,11 @@ function renderTable(treeMode, totalTrees) {
 
             function drawPageFramework(p) {
                 doc.setPage(p);
+                doc.setDrawColor(201, 170, 122);
+doc.setLineWidth(0.15);
+for (var ly = 30; ly < pageH - 25; ly += 6) {
+    doc.line(14, ly, pageW - 14, ly);
+}
                 doc.setFillColor(253, 246, 227);
 doc.rect(0, 0, pageW, pageH, 'F');
                 
