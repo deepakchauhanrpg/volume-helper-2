@@ -657,16 +657,9 @@ function renderTable(treeMode, totalTrees) {
 
             function drawPageFramework(p) {
                 doc.setPage(p);
-doc.setFillColor(253, 246, 227);
-doc.rect(0, 0, pageW, pageH, 'F');
-doc.setDrawColor(201, 170, 122);
-doc.setLineWidth(0.15);
-for (var ly = 30; ly < pageH - 25; ly += 6) {
-    doc.line(14, ly, pageW - 14, ly);
-}
                 
                 // Top Navy Accent Bar
-                doc.setFillColor(139, 69, 19);
+                doc.setFillColor(30, 58, 138);
                 doc.rect(14, 10, pageW - 28, 1.2, 'F');
 
                 // Header Setup
@@ -686,7 +679,7 @@ for (var ly = 30; ly < pageH - 25; ly += 6) {
                 doc.text('Date: ' + dateStr, pageW - 14, 22.5, { align: 'right' });
 
                 // Grand Summary Top Box Panel
-                doc.setFillColor(245, 235, 210);
+                doc.setFillColor(248, 250, 252);
                 doc.setDrawColor(226, 232, 240);
                 doc.setLineWidth(0.25);
                 doc.roundedRect(14, 26, pageW - 28, 7, 1, 1, 'FD');
@@ -731,7 +724,7 @@ for (var ly = 30; ly < pageH - 25; ly += 6) {
                     var boxStartY = currentY;
 
                     // Container Rounded Card Red Accent Wrapper Box
-                    doc.setFillColor(253, 246, 227);
+                    doc.setFillColor(255, 255, 255);
                     doc.setDrawColor(239, 68, 68);
                     doc.setLineWidth(0.2);
                     doc.roundedRect(padding + 2, boxStartY, pageW - (padding * 2) - 4, totalBoxHeight, 1.2, 1.2, 'FD');
@@ -759,8 +752,8 @@ for (var ly = 30; ly < pageH - 25; ly += 6) {
                         margin: { left: padding + 4, right: padding + 4 },
                         theme: 'striped',
                         styles: { fontSize: 8.5, cellPadding: 1.8, font: 'helvetica' },
-                        headStyles: { fillColor: [201, 170, 122], textColor: [107, 58, 42], fontStyle: 'bold' },
-                        alternateRowStyles: { fillColor: [248, 240, 220] },
+                        headStyles: {fillColor: [254, 242, 242], textColor: [30, 58, 138], fontStyle: 'bold' },
+                        alternateRowStyles: { fillColor: [255, 253, 253] },
                         didDrawCell: function(data) {
                             var pNum = doc.internal.getNumberOfPages();
                             if (!pageLogsCount[pNum]) pageLogsCount[pNum] = 0;
@@ -778,7 +771,7 @@ pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(cellVal || 0);
                     
                     // Inside Box Custom Strip Footer Integration 🪵
                     var fY = finalTableY + 4;
-                    doc.setFillColor(201, 170, 122);
+                   doc.setFillColor(254, 242, 242);
                     doc.rect(padding + 3, finalTableY + 0.5, pageW - (padding * 2) - 6, 5.5, 'F');
 
                     doc.setFillColor(180, 83, 9); doc.rect(padding + 5.2, fY - 1.5, 1.6, 1.1, 'F');
@@ -805,7 +798,7 @@ pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(cellVal || 0);
                     margin: { left: padding + 4, right: padding + 4, top: 44, bottom: 28 },
                     theme: 'striped',
                     styles: { fontSize: 9, cellPadding: 2.2, font: 'helvetica' },
-                    headStyles: { fillColor: [201, 170, 122], textColor: [107, 58, 42], fontStyle: 'bold' },
+                    headStyles: { fillColor: [254, 242, 242], textColor: [30, 58, 138], fontStyle: 'bold' },
                     didDrawCell: function(data) {
                         var pNum = data.pageNumber;
                         if (!pageLogsCount[pNum]) pageLogsCount[pNum] = 0;
