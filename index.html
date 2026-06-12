@@ -922,7 +922,7 @@ doc.text(splitMsg, pageW / 2, pageH - (splitMsg.length > 1 ? 9 : 6), { align: 'c
                 var rightX = (pageW / 2) + (textWidth / 2) + 2;
                 var bY = pageH - 8;
 
-                var vectorType = (p - 1) % 8;
+                var vectorType = (p - 1) % 11;
 
                 if (vectorType === 0) {
     // ❤️ Classic Heart
@@ -983,6 +983,72 @@ else if (vectorType === 3) {
     doc.setFillColor(255, 240, 200);
     doc.triangle(rightX + 1.5, bY - 0.1, rightX + 0.2, bY + 0.3, rightX + 1.5, bY + 0.2, 'F');
 }
+    else if (vectorType === 8) {
+// 👑 Crown
+doc.setFillColor(255, 200, 0);
+
+// Left
+doc.triangle(leftX - 2.0, bY + 1.0, leftX - 1.0, bY - 1.0, leftX, bY + 1.0, 'F');
+doc.triangle(leftX, bY + 1.0, leftX + 1.0, bY - 1.6, leftX + 2.0, bY + 1.0, 'F');
+doc.rect(leftX - 2.2, bY + 0.8, 4.4, 0.5, 'F');
+
+doc.setFillColor(255, 80, 120);
+doc.circle(leftX - 1.0, bY - 0.9, 0.22, 'F');
+doc.circle(leftX + 1.0, bY - 1.5, 0.22, 'F');
+
+// Right
+doc.setFillColor(255, 200, 0);
+doc.triangle(rightX, bY + 1.0, rightX + 1.0, bY - 1.0, rightX + 2.0, bY + 1.0, 'F');
+doc.triangle(rightX + 2.0, bY + 1.0, rightX + 3.0, bY - 1.6, rightX + 4.0, bY + 1.0, 'F');
+doc.rect(rightX - 0.2, bY + 0.8, 4.4, 0.5, 'F');
+
+doc.setFillColor(255, 80, 120);
+doc.circle(rightX + 1.0, bY - 0.9, 0.22, 'F');
+doc.circle(rightX + 3.0, bY - 1.5, 0.22, 'F');
+
+    }
+        else if (vectorType === 9) {
+// 🌙 Crescent Moon
+
+doc.setFillColor(255, 220, 120);
+doc.circle(leftX, bY - 0.2, 1.3, 'F');
+
+doc.setFillColor(255, 255, 255);
+doc.circle(leftX + 0.6, bY - 0.2, 1.1, 'F');
+
+doc.setFillColor(255, 220, 120);
+doc.circle(rightX + 2.0, bY - 0.2, 1.3, 'F');
+
+doc.setFillColor(255, 255, 255);
+doc.circle(rightX + 2.6, bY - 0.2, 1.1, 'F');
+
+        }
+            else if (vectorType === 10) {
+// 🦋 Butterfly
+
+doc.setFillColor(255, 120, 180);
+
+// Left
+doc.circle(leftX - 0.8, bY - 0.6, 0.8, 'F');
+doc.circle(leftX + 0.8, bY - 0.6, 0.8, 'F');
+doc.circle(leftX - 0.8, bY + 0.7, 0.6, 'F');
+doc.circle(leftX + 0.8, bY + 0.7, 0.6, 'F');
+
+doc.setFillColor(80, 80, 80);
+doc.rect(leftX - 0.1, bY - 1.0, 0.2, 2.0, 'F');
+
+// Right
+doc.setFillColor(255, 120, 180);
+
+doc.circle(rightX + 1.2, bY - 0.6, 0.8, 'F');
+doc.circle(rightX + 2.8, bY - 0.6, 0.8, 'F');
+doc.circle(rightX + 1.2, bY + 0.7, 0.6, 'F');
+doc.circle(rightX + 2.8, bY + 0.7, 0.6, 'F');
+
+doc.setFillColor(80, 80, 80);
+doc.rect(rightX + 1.9, bY - 1.0, 0.2, 2.0, 'F');
+
+            }
 else if (vectorType === 4) {
     // 💕 Double hearts small
     doc.setFillColor(255, 80, 120);
