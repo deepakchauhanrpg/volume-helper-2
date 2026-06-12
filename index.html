@@ -768,14 +768,8 @@ function renderTable(treeMode, totalTrees) {
                 doc.line(14, pageH - 21, pageW - 14, pageH - 21);
             }
 
-            
-            // ... existing code ...
+            // Framework Initiation
             drawPageFramework(1);
-
-            // Nayi line yahan add karo:
-            doc.addImage('https://i.ibb.co/MkKSyRWd/19029.png', 'PNG', 10, 50, 190, 100);
-
-
             if (isTreeMode) {
                 structuredTreeData.forEach(function(tree) {
                     var estimatedTableHeight = 6 + (tree.logs.length * 6) + 6;
