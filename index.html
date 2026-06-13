@@ -716,9 +716,10 @@ function renderTable(treeMode, totalTrees) {
             var pageLogsCount = {};
             var pageVolumeSum = {};
             var currentY = 44; 
-
-            function drawPageFramework(p) {
-                doc.setPage(p);
+            
+function drawPageFramework(p) {
+    doc.setPage(p);
+    if (p === 1) return;
                 
                 // Top Navy Accent Bar
                 doc.setFillColor(30, 58, 138);
