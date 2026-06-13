@@ -917,7 +917,7 @@ pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(cellVal || 0);
                 doc.setTextColor(156, 163, 175);
                 doc.text('Page ' + p + ' / ' + totalPagesCount, pageW - 14, pageH - 6, { align: 'right' });
 
-                var msgIdx = (p - 1) % footerMessages.length;
+                var msgIdx = (p - 2) % footerMessages.length;
                 var currentMsg = footerMessages[msgIdx];
                 doc.setFont('times', 'bolditalic');
                 doc.setFontSize(10.5);
