@@ -767,7 +767,12 @@ function renderTable(treeMode, totalTrees) {
                 doc.setLineWidth(0.2);
                 doc.line(14, pageH - 21, pageW - 14, pageH - 21);
             }
-
+            
+var imgUrl = "https://raw.githubusercontent.com/deepakchauhanrpg/volume-helper-2/main/1781269281241%20(2)%20(1).png";
+var introImg = await fetch(imgUrl).then(r => r.blob()).then(b => new Promise(res => { var fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(b); }));
+doc.addImage(introImg, 'JPEG', 0, 0, pageW, pageH);
+doc.addPage();
+            
             // Framework Initiation
             drawPageFramework(1);
             if (isTreeMode) {
