@@ -889,6 +889,7 @@ pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(cellVal || 0);
 
             for (var p = 1; p <= totalPagesCount; p++) {
                 doc.setPage(p);
+                if (p === 1) continue;
                 
                 var pLogs = pageLogsCount[p] || 0;
                 var pVol = pageVolumeSum[p] || 0;
