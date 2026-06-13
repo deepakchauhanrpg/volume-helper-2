@@ -597,7 +597,7 @@ function renderTable(treeMode, totalTrees) {
         fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     }
 
-    function downloadPDF() {
+    async function downloadPDF() {
         try {
             var jsPDF = window.jspdf.jsPDF;
             var doc = new jsPDF('p', 'mm', 'a4');
