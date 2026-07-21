@@ -222,17 +222,22 @@ setTimeout(function(){
         }
     }
 
-    function renderChips() {
+        function renderChips() {
         var grid = document.getElementById('lengthGrid');
         grid.innerHTML = '';
+        
         defaultLengths.forEach(function(val) {
             var chip = document.createElement('div');
-            chip.className = 'chip selected';
+            var isSelected = selectedLengths.indexOf(val) !== -1;
+            chip.className = 'chip' + (isSelected ? ' selected' : '');
             chip.innerText = val.toFixed(2);
+            
             chip.onclick = function() {
-                if(chip.classList.contains('selected')) {
+                if (chip.classList.contains('selected')) {
                     chip.classList.remove('selected');
-                    selectedLengths = selectedLengths.filter(function(v) { return v !== val; });
+                    selectedLengths = selectedLengths.filter(function(v) { 
+                        return Math.abs(v - val) > 0.001; 
+                    });
                 } else {
                     chip.classList.add('selected');
                     selectedLengths.push(val);
@@ -245,6 +250,7 @@ setTimeout(function(){
     function getSelectedLengths() {
         return selectedLengths.length > 0 ? selectedLengths : defaultLengths;
     }
+
 
     function truncDec(num, dec) {
         var calc = Math.pow(10, dec);
@@ -324,15 +330,18 @@ if(minG >= maxG) { alert("Min Girth, Max Girth se choti honi chahiye!"); return;
     var currentVolSum = 0;
     var avgVolPerLog = target / totalLogs;
 
-    // Length pools
+    // Length pools (Dynamic based only on selection)
     var longLengths = [];
     var tukceLengths = [];
+    
     aVals.forEach(function(v) {
         if (v >= 1.85) longLengths.push(v);
         else tukceLengths.push(v);
     });
-    if (longLengths.length === 0) longLengths = [2.15, 2.45, 1.85];
-    if (tukceLengths.length === 0) tukceLengths = [0.95, 1.25, 1.55];
+    
+    // Agar koi ek hi category select hui hai to fallback aVals se hi hoga
+    if (longLengths.length === 0) longLengths = aVals.slice();
+    if (tukceLengths.length === 0) tukceLengths = aVals.slice();
 
     // avgVolPerLog ke hisaab se tukde % decide karo
     var tukdePercent;
@@ -345,22 +354,15 @@ if(minG >= maxG) { alert("Min Girth, Max Girth se choti honi chahiye!"); return;
     var tukdeCount = Math.round(totalLogs * tukdePercent);
     var longCount  = totalLogs - tukdeCount;
 
-    // Long length assign karo — 2.15 dominant
+    // Strictly selected lengths se hi pick karega
     function getLongLength() {
-        var r = Math.random();
-        if (r < 0.45)      return 2.15;
-        else if (r < 0.60) return 2.45;
-        else if (r < 0.70) return 1.85;
-        else               return longLengths[Math.floor(Math.random() * longLengths.length)];
+        return longLengths[Math.floor(Math.random() * longLengths.length)];
     }
 
-    // Tukda length assign karo
     function getTukdaLength() {
-        var r = Math.random();
-        if (r < 0.45)      return 0.95;
-        else if (r < 0.75) return 1.25;
-        else               return 1.55;
+        return tukceLengths[Math.floor(Math.random() * tukceLengths.length)];
     }
+
 
     // Girth assign karo — avgVolPerLog ke hisaab se
     function getGirth(isTukda) {
