@@ -1060,9 +1060,9 @@ pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(cellVal || 0);
                 
 // Meta Index Page Counter
                 doc.setFont('helvetica', 'bold'); 
-                doc.setFontSize(11); 
+                doc.setFontSize(13); 
                 doc.setTextColor(30, 30, 30);
-                doc.text('Page ' + p + ' / ' + totalPagesCount, pageW - 14, 8, { align: 'right' });
+                doc.text('Page ' + p + ' / ' + totalPagesCount, pageW - 14, 7, { align: 'right' });
                 var msgIdx = (p - 2) % footerMessages.length;
                 var currentMsg = footerMessages[msgIdx];
                 doc.setFont('times', 'bolditalic');
