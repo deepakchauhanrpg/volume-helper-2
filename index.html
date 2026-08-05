@@ -919,13 +919,12 @@ pageVolumeSum[pNum] = pageVolumeSum[pNum] + parseFloat(cellVal || 0);
                 doc.text(liveTargetStr, pageW - 14, pageH - 16, { align: 'right' });
 
                 doc.line(14, pageH - 12, pageW - 14, pageH - 12);
-
-                // Meta Index Page Counter
-                doc.setFont('helvetica', 'normal'); 
-                doc.setFontSize(8); 
-                doc.setTextColor(156, 163, 175);
-                doc.text('Page ' + p + ' / ' + totalPagesCount, pageW - 14, pageH - 6, { align: 'right' });
-
+                
+// Meta Index Page Counter
+                doc.setFont('helvetica', 'bold'); 
+                doc.setFontSize(9); 
+                doc.setTextColor(30, 30, 30);
+                doc.text('Page ' + p + ' / ' + totalPagesCount, pageW - 14, 10, { align: 'right' });
                 var msgIdx = (p - 2) % footerMessages.length;
                 var currentMsg = footerMessages[msgIdx];
                 doc.setFont('times', 'bolditalic');
