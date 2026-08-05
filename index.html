@@ -9,6 +9,7 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.2/confetti.browser.min.js"></script>
 
     <style>
         :root {
@@ -106,6 +107,472 @@
   25%{transform:translateX(-8px)} 
   75%{transform:translateX(8px)}
         }
+
+        /* 🎉 Birthday Celebration Overlay */
+        #birthdayOverlay {
+            position: fixed; inset: 0; z-index: 99999; display: none;
+            background: linear-gradient(135deg, #ff5f6d, #ffc371, #ff5f6d, #a855f7);
+            background-size: 300% 300%;
+            animation: bdayGradient 6s ease infinite;
+            align-items: center; justify-content: center;
+            flex-direction: column; text-align: center; overflow: hidden;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        #birthdayOverlay.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+        @keyframes bdayGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        #confettiCanvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+        .balloons { font-size: 42px; margin-bottom: 6px; animation: floatBalloon 3s ease-in-out infinite; }
+        @keyframes floatBalloon { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+        .bday-title { color: #fff; font-size: 34px; font-weight: 900; margin: 4px 0; text-shadow: 0 3px 10px rgba(0,0,0,0.25); animation: popIn 0.8s cubic-bezier(.36,1.5,.5,1); }
+        .bday-sub { color: #fff; font-size: 26px; font-weight: 800; margin: 0 0 2px; text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .bday-name { color: #fffbe6; font-size: 20px; font-weight: 700; margin: 0 0 22px; font-style: italic; text-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        @keyframes popIn { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .bday-btn { background: #fff; color: #d6336c; border: none; padding: 14px 32px; border-radius: 50px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.25); animation: btnPulse 1.6s ease-in-out infinite; }
+        @keyframes btnPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+    </style>
+</head>
+<body>
+
+<!-- ⚠️ EASY REMOVE: ye poora div hata do celebration hatane ke liye -->
+<div id="birthdayOverlay">
+    <canvas id="confettiCanvas"></canvas>
+    <div class="balloons">🎈🎉🎈</div>
+    <h1 class="bday-title">Happy Birthday</h1>
+    <h2 class="bday-sub">Sweetheart</h2>
+    <p class="bday-name">aka meri Anni ❤️</p>
+    <button class="bday-btn" onclick="closeBirthdayScreen()">Aage Badho 💝</button>
+</div>
+
+<div class="container">
+    <div id="authScreen">
+        <div class="lock-icon"><i class="fa-solid fa-lock"></i></div>
+        <h2 class="auth-title">Volume Helper Pro</h2>
+        <p class="auth-subtitle">Apna password enter karein</p>
+        <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="passwordInput" placeholder="Password yahan likhein">
+            <i class="fa-solid fa-eye toggle-pass" onclick="togglePasswordView()"></i>
+        </div>
+        <button class="btn btn-primary" onclick="checkAuth()">Login</button>
+    </div>
+
+    <div id="appScreen">
+        <div class="app-header">
+            <h2 class="app-title">🪵 Volume Helper Pro</h2>
+        </div>
+
+        <span class="section-label">Length (A) Select Karo:</span>
+        <div class="length-grid" id="lengthGrid"></div>
+
+        <div class="form-row">
+            <div class="field">
+                <label for="minB">Min Girth (B)</label>
+                <input type="number" id="minB" step="0.01" value="0.31">
+            </div>
+            <div class="field">
+                <label for="maxB">Max Girth (B)</label>
+                <input type="number" id="maxB" step="0.01" value="2.00">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="field">
+                <label for="target">Target Volume (C)</label>
+                <input type="number" id="target" step="0.0001" placeholder="e.g. 150.45">
+            </div>
+            <div class="field">
+                <label for="totalLogs">Total Logs Count</label>
+                <input type="number" id="totalLogs" placeholder="e.g. 200">
+            </div>
+        </div>
+
+        <div class="tree-input-box">
+            <label for="numTrees">🌲 Number of Trees (Optional)</label>
+            <input type="number" id="numTrees" placeholder="e.g. 15">
+            
+            <div class="tree-range-row">
+                <div class="range-field">
+                    <label for="minLogsTree">Min Logs Per Tree</label>
+                    <input type="number" id="minLogsTree" value="2" placeholder="Min">
+                </div>
+                <div class="range-field">
+                    <label for="maxLogsTree">Max Logs Per Tree</label>
+                    <input type="number" id="maxLogsTree" value="6" placeholder="Max">
+                </div>
+            </div>
+            <span class="hint">💡 Khaali chhodne par bina tree ke normal list banegi</span>
+        </div>
+
+        <div id="loadingMsg"><i class="fa-solid fa-spinner fa-spin"></i> Processing calculation...</div>
+        
+        <button class="btn btn-primary" id="generateBtn" onclick="generateVolumeList()">
+            <i class="fa-solid fa-layer-group"></i> Generate List
+        </button>
+        
+        <div class="summary-box" id="summaryBox"></div>
+        
+        <button class="btn btn-success" id="downloadBtn" onclick="downloadPDF()">
+            <i class="fa-solid fa-file-pdf"></i> Download PDF
+        </button>
+
+        <div id="tableWrapper"></div>
+
+        <div class="footer-credit">Designed by Deepak Chauhan | Specially for Anjali Gangwar ❤️</div>
+    </div>
+</div>
+<script>
+    var SHEET_URL  = "https://script.google.com/macros/s/AKfycbwxSUFIxtroojnp7UHsYZRPqx0iBOpQmaHuHv_ld8-Duz97012D5ioy2NnuqU023iAm/exec"; 
+
+    // 🎉 Birthday confetti — ⚠️ EASY REMOVE: SHOW_BIRTHDAY_SURPRISE ko false karo
+    var SHOW_BIRTHDAY_SURPRISE = true;
+    var burstInterval;
+    (function() {
+        var canvas = document.getElementById('confettiCanvas');
+        var myConfetti = confetti.create(canvas, { resize: true, useWorker: true });
+        function fire(particleRatio, opts) {
+            myConfetti(Object.assign({}, opts, { origin: { y: 0.6 }, particleCount: Math.floor(200 * particleRatio) }));
+        }
+        function burst() {
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
+        }
+        window.triggerBirthdayCelebration = function() {
+            document.getElementById('birthdayOverlay').style.display = 'flex';
+            burst();
+            burstInterval = setInterval(burst, 2000);
+        };
+        window.closeBirthdayScreen = function() {
+            clearInterval(burstInterval);
+            document.getElementById('birthdayOverlay').classList.add('hide');
+        };
+    })();
+
+    var defaultLengths = [0.95, 1.25, 1.55, 1.85, 2.15, 2.45, 2.75, 3.05, 3.35];
+    var selectedLengths = [0.95, 1.25, 1.55, 1.85, 2.15, 2.45, 2.75, 3.05, 3.35];
+    var structuredTreeData = [];
+    var displayGrandSummary = "";
+
+    window.onload = function() {
+        renderChips();
+    };
+
+    function togglePasswordView() {
+        var el = document.getElementById('passwordInput');
+        el.type = (el.type === 'password') ? 'text' : 'password';
+    }
+
+    function checkAuth() {
+        var input = document.getElementById('passwordInput').value.trim();
+        if(btoa(input) === "QW5qYWxpMTQz") {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'block';
+            if (SHOW_BIRTHDAY_SURPRISE) { triggerBirthdayCelebration(); }
+        } else {
+            if(navigator.vibrate) navigator.vibrate(200);
+            var inp = document.querySelector('#passwordInput');
+inp.style.animation = 'shake 0.4s';
+inp.style.borderColor = '#dc2626';
+setTimeout(function(){ 
+    inp.style.animation = ''; 
+    inp.style.borderColor = ''; 
+}, 400);
+        }
+    }
+
+        function renderChips() {
+        var grid = document.getElementById('lengthGrid');
+        grid.innerHTML = '';
+        
+        defaultLengths.forEach(function(val) {
+            var chip = document.createElement('div');
+            var isSelected = selectedLengths.indexOf(val) !== -1;
+            chip.className = 'chip' + (isSelected ? ' selected' : '');
+            chip.innerText = val.toFixed(2);
+            
+            chip.onclick = function() {
+                if (chip.classList.contains('selected')) {
+                    chip.classList.remove('selected');
+                    selectedLengths = selectedLengths.filter(function(v) { 
+                        return Math.abs(v - val) > 0.001; 
+                    });
+                } else {
+                    chip.classList.add('selected');
+                    selectedLengths.push(val);
+                }
+            };
+            grid.appendChild(chip);
+        });
+    }
+
+    function getSelectedLengths() {
+        return selectedLengths.length > 0 ? selectedLengths : defaultLengths;
+    }
+
+
+    function truncDec(num, dec) {
+        var calc = Math.pow(10, dec);
+        return (Math.round(num * calc) / calc).toFixed(dec);
+    }
+
+    function generateVolumeList() {
+        var target    = parseFloat(document.getElementById('target').value);
+        var totalLogs = parseInt(document.getElementById('totalLogs').value);
+        var minG      = parseFloat(document.getElementById('minB').value);
+        var maxG      = parseFloat(document.getElementById('maxB').value);
+
+        if(isNaN(target) || isNaN(totalLogs) || isNaN(minG) || isNaN(maxG)) {
+    alert("Saari fields sahi se fill karo bhai!");
+    return;
+}
+if(minG >= maxG) { alert("Min Girth, Max Girth se choti honi chahiye!"); return; }
+
+        document.getElementById('loadingMsg').style.display = 'block';
+        document.getElementById('summaryBox').style.display = 'none';
+        document.getElementById('downloadBtn').style.display = 'none';
+        document.getElementById('tableWrapper').innerHTML = '';
+
+        var aVals = getSelectedLengths();
+        trackUsage(aVals, target, totalLogs);
+
+        setTimeout(function() {
+            runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals);
+        }, 150);
+    }
+
+    function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
+    var numTreesVal    = document.getElementById('numTrees').value.trim();
+    var treeMode       = numTreesVal !==        #confettiCanvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+        .balloons { font-size: 42px; margin-bottom: 6px; animation: floatBalloon 3s ease-in-out infinite; }
+        @keyframes floatBalloon { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+        .bday-title { color: #fff; font-size: 34px; font-weight: 900; margin: 4px 0; text-shadow: 0 3px 10px rgba(0,0,0,0.25); animation: popIn 0.8s cubic-bezier(.36,1.5,.5,1); }
+        .bday-sub { color: #fff; font-size: 26px; font-weight: 800; margin: 0 0 2px; text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .bday-name { color: #fffbe6; font-size: 20px; font-weight: 700; margin: 0 0 22px; font-style: italic; text-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        @keyframes popIn { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .bday-btn { background: #fff; color: #d6336c; border: none; padding: 14px 32px; border-radius: 50px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.25); animation: btnPulse 1.6s ease-in-out infinite; }
+        @keyframes btnPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+    </style>
+</head>
+<body>
+
+<!-- ⚠️ EASY REMOVE: ye poora div hata do celebration hatane ke liye -->
+<div id="birthdayOverlay">
+    <canvas id="confettiCanvas"></canvas>
+    <div class="balloons">🎈🎉🎈</div>
+    <h1 class="bday-title">Happy Birthday</h1>
+    <h2 class="bday-sub">Sweetheart</h2>
+    <p class="bday-name">aka meri Anni ❤️</p>
+    <button class="bday-btn" onclick="closeBirthdayScreen()">Aage Badho 💝</button>
+</div>
+
+<div class="container">
+    <div id="authScreen">
+        <div class="lock-icon"><i class="fa-solid fa-lock"></i></div>
+        <h2 class="auth-title">Volume Helper Pro</h2>
+        <p class="auth-subtitle">Apna password enter karein</p>
+        <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="passwordInput" placeholder="Password yahan likhein">
+            <i class="fa-solid fa-eye toggle-pass" onclick="togglePasswordView()"></i>
+        </div>
+        <button class="btn btn-primary" onclick="checkAuth()">Login</button>
+    </div>
+
+    <div id="appScreen">
+        <div class="app-header">
+            <h2 class="app-title">🪵 Volume Helper Pro</h2>
+        </div>
+
+        <span class="section-label">Length (A) Select Karo:</span>
+        <div class="length-grid" id="lengthGrid"></div>
+
+        <div class="form-row">
+            <div class="field">
+                <label for="minB">Min Girth (B)</label>
+                <input type="number" id="minB" step="0.01" value="0.31">
+            </div>
+            <div class="field">
+                <label for="maxB">Max Girth (B)</label>
+                <input type="number" id="maxB" step="0.01" value="2.00">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="field">
+                <label for="target">Target Volume (C)</label>
+                <input type="number" id="target" step="0.0001" placeholder="e.g. 150.45">
+            </div>
+            <div class="field">
+                <label for="totalLogs">Total Logs Count</label>
+                <input type="number" id="totalLogs" placeholder="e.g. 200">
+            </div>
+        </div>
+
+        <div class="tree-input-box">
+            <label for="numTrees">🌲 Number of Trees (Optional)</label>
+            <input type="number" id="numTrees" placeholder="e.g. 15">
+            
+            <div class="tree-range-row">
+                <div class="range-field">
+                    <label for="minLogsTree">Min Logs Per Tree</label>
+                    <input type="number" id="minLogsTree" value="2" placeholder="Min">
+                </div>
+                <div class="range-field">
+                    <label for="maxLogsTree">Max Logs Per Tree</label>
+                    <input type="number" id="maxLogsTree" value="6" placeholder="Max">
+                </div>
+            </div>
+            <span class="hint">💡 Khaali chhodne par bina tree ke normal list banegi</span>
+        </div>
+
+        <div id="loadingMsg"><i class="fa-solid fa-spinner fa-spin"></i> Processing calculation...</div>
+        
+        <button class="btn btn-primary" id="generateBtn" onclick="generateVolumeList()">
+            <i class="fa-solid fa-layer-group"></i> Generate List
+        </button>
+        
+        <div class="summary-box" id="summaryBox"></div>
+        
+        <button class="btn btn-success" id="downloadBtn" onclick="downloadPDF()">
+            <i class="fa-solid fa-file-pdf"></i> Download PDF
+        </button>
+
+        <div id="tableWrapper"></div>
+
+        <div class="footer-credit">Designed by Deepak Chauhan | Specially for Anjali Gangwar ❤️</div>
+    </div>
+</div>
+<script>
+    var SHEET_URL  = "https://script.google.com/macros/s/AKfycbwxSUFIxtroojnp7UHsYZRPqx0iBOpQmaHuHv_ld8-Duz97012D5ioy2NnuqU023iAm/exec"; 
+
+    // 🎉 Birthday confetti — ⚠️ EASY REMOVE: SHOW_BIRTHDAY_SURPRISE ko false karo
+    var SHOW_BIRTHDAY_SURPRISE = true;
+    var burstInterval;
+    (function() {
+        var canvas = document.getElementById('confettiCanvas');
+        var myConfetti = confetti.create(canvas, { resize: true, useWorker: true });
+        function fire(particleRatio, opts) {
+            myConfetti(Object.assign({}, opts, { origin: { y: 0.6 }, particleCount: Math.floor(200 * particleRatio) }));
+        }
+        function burst() {
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
+        }
+        window.triggerBirthdayCelebration = function() {
+            document.getElementById('birthdayOverlay').style.display = 'flex';
+            burst();
+            burstInterval = setInterval(burst, 2000);
+        };
+        window.closeBirthdayScreen = function() {
+            clearInterval(burstInterval);
+            document.getElementById('birthdayOverlay').classList.add('hide');
+        };
+    })();
+
+    var defaultLengths = [0.95, 1.25, 1.55, 1.85, 2.15, 2.45, 2.75, 3.05, 3.35];
+    var selectedLengths = [0.95, 1.25, 1.55, 1.85, 2.15, 2.45, 2.75, 3.05, 3.35];
+    var structuredTreeData = [];
+    var displayGrandSummary = "";
+
+    window.onload = function() {
+        renderChips();
+    };
+
+    function togglePasswordView() {
+        var el = document.getElementById('passwordInput');
+        el.type = (el.type === 'password') ? 'text' : 'password';
+    }
+
+    function checkAuth() {
+        var input = document.getElementById('passwordInput').value.trim();
+        if(btoa(input) === "QW5qYWxpMTQz") {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'block';
+            if (SHOW_BIRTHDAY_SURPRISE) { triggerBirthdayCelebration(); }
+        } else {
+            if(navigator.vibrate) navigator.vibrate(200);
+            var inp = document.querySelector('#passwordInput');
+inp.style.animation = 'shake 0.4s';
+inp.style.borderColor = '#dc2626';
+setTimeout(function(){ 
+    inp.style.animation = ''; 
+    inp.style.borderColor = ''; 
+}, 400);
+        }
+    }
+
+        function renderChips() {
+        var grid = document.getElementById('lengthGrid');
+        grid.innerHTML = '';
+        
+        defaultLengths.forEach(function(val) {
+            var chip = document.createElement('div');
+            var isSelected = selectedLengths.indexOf(val) !== -1;
+            chip.className = 'chip' + (isSelected ? ' selected' : '');
+            chip.innerText = val.toFixed(2);
+            
+            chip.onclick = function() {
+                if (chip.classList.contains('selected')) {
+                    chip.classList.remove('selected');
+                    selectedLengths = selectedLengths.filter(function(v) { 
+                        return Math.abs(v - val) > 0.001; 
+                    });
+                } else {
+                    chip.classList.add('selected');
+                    selectedLengths.push(val);
+                }
+            };
+            grid.appendChild(chip);
+        });
+    }
+
+    function getSelectedLengths() {
+        return selectedLengths.length > 0 ? selectedLengths : defaultLengths;
+    }
+
+
+    function truncDec(num, dec) {
+        var calc = Math.pow(10, dec);
+        return (Math.round(num * calc) / calc).toFixed(dec);
+    }
+
+    function generateVolumeList() {
+        var target    = parseFloat(document.getElementById('target').value);
+        var totalLogs = parseInt(document.getElementById('totalLogs').value);
+        var minG      = parseFloat(document.getElementById('minB').value);
+        var maxG      = parseFloat(document.getElementById('maxB').value);
+
+        if(isNaN(target) || isNaN(totalLogs) || isNaN(minG) || isNaN(maxG)) {
+    alert("Saari fields sahi se fill karo bhai!");
+    return;
+}
+if(minG >= maxG) { alert("Min Girth, Max Girth se choti honi chahiye!"); return; }
+
+        document.getElementById('loadingMsg').style.display = 'block';
+        document.getElementById('summaryBox').style.display = 'none';
+        document.getElementById('downloadBtn').style.display = 'none';
+        document.getElementById('tableWrapper').innerHTML = '';
+
+        var aVals = getSelectedLengths();
+        trackUsage(aVals, target, totalLogs);
+
+        setTimeout(function() {
+            runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals);
+        }, 150);
+    }
+
+    function runHighPrecisionEngine(target, totalLogs, minG, maxG, aVals) {
+    var numTreesVal    = document.getElementById('numTrees').value.trim();
+    var treeMode       = numTreesVal !==        }
         
     </style>
 </head>
