@@ -884,7 +884,7 @@ function drawPageFramework(p) {
                 doc.line(14, pageH - 21, pageW - 14, pageH - 21);
             }
             
-var imgUrl = "https://raw.githubusercontent.com/deepakchauhanrpg/volume-helper-2/main/Screenshot_20260725-191538_Files%20by%20Google.png";
+var imgUrl = "https://raw.githubusercontent.com/deepakchauhanrpg/volume-helper-2/main/image1_resized.jpg";
 var introImg = await fetch(imgUrl).then(r => r.blob()).then(b => new Promise(res => { var fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(b); }));
 doc.addPage();
 doc.setPage(1);
